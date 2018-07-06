@@ -1,4 +1,4 @@
-#include "bet-simple.hpp"
+#include "simple.hpp"
 
 namespace bet_simple {
 
