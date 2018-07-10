@@ -15,13 +15,13 @@ namespace eosio {
 
 	 // @abi table counts i64
 	 struct counts{
-		 counts(): index(0), count(0) {}
-		 uint64_t index;
+		 counts(account_name o = account_name()): count(0), owner(o) {}
+		 account_name owner;
 		 uint64_t count;
-		 uint64_t primary_key() const {return index;}
+		 uint64_t primary_key() const {return owner;}
 		 uint64_t incr() {return ++count;}
 	 };
-	 EOSLIB_SERIALIZE(counts, (index)(count))
+	 EOSLIB_SERIALIZE(counts, (owner)(count))
 
 	 typedef eosio::multi_index<N(counts), counts> count_t;
 	 count_t counts;
