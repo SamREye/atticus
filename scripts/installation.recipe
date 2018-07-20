@@ -1,0 +1,10 @@
+## Recipe for Ubuntu 18.04 LTS
+apt-get update
+export LC_ALL=C.UTF-8
+apt-get install python3-dev
+apt-get install python3-pip
+apt-get install python3-venv
+pip3 install --upgrade pip setuptools
+python3 -m venv ~/venvs/themis
+source ~/venvs/themis/bin/activate
+pip install flask gunicorn
