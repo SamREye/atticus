@@ -2,3 +2,5 @@
 *.wast
 *.abi
 *.swp
+client/__pycache__/
+client/app/__pycache__/
