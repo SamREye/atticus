@@ -3,6 +3,7 @@ from app import app
 from app.forms import LoginForm
 
 @app.route("/")
+@app.route("/index")
 def index():
     return Response("It works!"), 200
 
