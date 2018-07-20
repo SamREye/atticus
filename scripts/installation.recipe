@@ -8,3 +8,7 @@ pip3 install --upgrade pip setuptools
 python3 -m venv ~/venvs/themis
 source ~/venvs/themis/bin/activate
 pip install flask gunicorn
+pip install flask-sqlalchemy
+pip install flask-migrate
+pip install flask-wtf
+
