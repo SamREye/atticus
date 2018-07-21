@@ -29,4 +29,32 @@ class Template(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
 
     def __repr__(self):
-        return '<Contract {}:{}>'.format(User.query.get(self.owner_id).username, self.title)
+        return '<Template {}:{}:{}>'.format(User.query.get(self.owner_id).username, self.title, self.id)
+
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(32), nullable=False)
+    template_id = db.Column(db.Integer, db.ForeignKey('template.id'), index=True)
+
+    def __repr__(self):
+        return '<Role {}:{}'.format(self.id, self.name)
+
+class Contract(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    template_id = db.Column(db.Integer, db.ForeignKey('template.id'), index=True)
+    params = db.Column(db.TEXT)
+    status = db.Column(db.String(32), index=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+
+    def __repr__(self):
+        return '<Contract {}:{}:{}>'.format(User.query.get(self.owner_id).username, Template.query.get(self.template_id).title, self.id)
+
+class Party(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    contract_id = db.Column(db.Integer, db.ForeignKey('contract.id'), index=True)
+    role = db.Column(db.Integer, db.ForeignKey('role.id'), index=True)
+    party_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    signed_on = db.Column(db.DateTime, nullable=True)
+
+    def __repr__(self):
+        return '<Party {}:{}:{}>'.format(self.contract_id, self.role, User.query.get(self.owner_id).username)
