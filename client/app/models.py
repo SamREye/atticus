@@ -23,11 +23,10 @@ def load_user(id):
 
 class Template(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(128), index=True)
+    title = db.Column(db.String(128), unique=True, nullable=False)
     code = db.Column(db.TEXT)
     body = db.Column(db.TEXT)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
-    uix_1 = db.UniqueConstraint('title', 'owner_id')
 
     def __repr__(self):
         return '<Contract {}:{}>'.format(User.query.get(self.owner_id).username, self.title)
