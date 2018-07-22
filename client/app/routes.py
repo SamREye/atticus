@@ -1,8 +1,8 @@
 from flask import flash, render_template, Response, redirect, url_for
 from app import app, db
-from app.forms import LoginForm, RegistrationForm
+from app.forms import LoginForm, RegistrationForm, CreateTemplateForm
 from flask_login import login_required, current_user, login_user, logout_user
-from app.models import User
+from app.models import User, Template
 
 @app.route("/")
 @app.route("/index")
@@ -48,3 +48,16 @@ def logout():
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
     return render_template('user.html', user=user)
+
+@app.route('/template/new', methods=['GET', 'POST'])
+@login_required
+def create_template():
+    form = CreateTemplateForm()
+    if form.validate_on_submit():
+        template = Template(title=form.title.data, code=form.code.data, body=form.body.data, owner_id=current_user.id)
+        db.session.add(template)
+        db.session.commit()
+        flash('Template saved.')
+        return redirect(url_for('user', username=current_user.username))
+    return render_template('create_template.html', title='Create a new Template', form=form)
+
