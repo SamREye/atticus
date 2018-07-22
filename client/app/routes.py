@@ -61,3 +61,9 @@ def create_template():
         return redirect(url_for('user', username=current_user.username))
     return render_template('create_template.html', title='Create a new Template', form=form)
 
+@app.route('/template/list')
+@login_required
+def list_templates():
+    templates = Template.query.all()
+    return render_template('list_templates.html', templates=templates)
+

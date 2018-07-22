@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Templates</h1>
+    {% for t in templates %}
+    <li>{{t.title}}</li>
+    {% endfor %}
+{% endblock %}
