@@ -2,7 +2,7 @@ from flask import flash, render_template, Response, redirect, url_for
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, CreateTemplateForm
 from flask_login import login_required, current_user, login_user, logout_user
-from app.models import User, Template
+from app.models import User, Template, Role
 
 @app.route("/")
 @app.route("/index")
@@ -57,6 +57,15 @@ def create_template():
         template = Template(title=form.title.data, code=form.code.data, body=form.body.data, owner_id=current_user.id)
         db.session.add(template)
         db.session.commit()
+        parties = template.parse_party_tags()
+        for party in parties:
+            party = Role(name=party, template_id=template.id)
+            db.session.add(party)
+        if len(parties) > 0:
+            db.session.commit()
+            flash('{} Parties have been established'.format(len(parties)))
+        else:
+            flash('Warning: No parties were established in the template')
         flash('Template saved.')
         return redirect(url_for('user', username=current_user.username))
     return render_template('create_template.html', title='Create a new Template', form=form)
