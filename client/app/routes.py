@@ -11,8 +11,9 @@ import json
 @login_required
 def index():
     templates = db.session.query(Template).filter(Template.owner_id == current_user.id).all()
-    contracts = db.session.query(Contract).filter(Contract.owner_id == current_user.id).all()
-    return render_template('home.html', title='Home', contracts=contracts, templates=templates)
+    contracts = db.session.query(Contract).filter(Contract.owner_id == current_user.id, Contract.status != "proposed").all()
+    proposals = db.session.query(Contract).filter(Contract.owner_id == current_user.id, Contract.status == "proposed").all()
+    return render_template('home.html', title='Home', proposals=proposals, contracts=contracts, templates=templates)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
