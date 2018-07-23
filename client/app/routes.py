@@ -57,15 +57,17 @@ def create_template():
         template = Template(title=form.title.data, code=form.code.data, body=form.body.data, party_labels=form.party_labels.data, params=form.params.data, owner_id=current_user.id)
         db.session.add(template)
         db.session.commit()
-        parties = template.parse_party_tags()
-        for party in parties:
-            party = Role(name=party, template_id=template.id)
-            db.session.add(party)
+        parties = template.get_party_labels()
         if len(parties) > 0:
-            db.session.commit()
             flash('{} Parties have been established'.format(len(parties)))
         else:
             flash('Warning: No parties were established in the template')
+        params = template.get_params()
+        if len(params) > 0:
+            flash('{} Params have been established'.format(len(params)))
+        else:
+            flash('Warning: No params were established in the template')
+        db.session.commit()
         flash('Template saved.')
         return redirect(url_for('user', username=current_user.username))
     return render_template('create_template.html', title='Create a new Template', form=form)

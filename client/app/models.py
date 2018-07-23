@@ -1,7 +1,7 @@
 from app import db, login
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-import re
+import re, json
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -31,15 +31,11 @@ class Template(db.Model):
     params = db.Column(db.TEXT)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
 
-    def parse_party_tags(self):
-        parties = []
-        for text in [self.code, self.body]:
-            for line in text.split("\n"):
-                regex = re.compile('\[\[\s*[Pp][Aa][Rr][Tt][Yy]\s*:\s*([a-zA-Z0-9 _]+)\s*\]\]')
-                m = regex.match(line)
-                if m:
-                    parties.append(m.group(0).strip())
-        return parties
+    def get_party_labels(self):
+        return json.loads(self.party_labels)
+
+    def get_params(self):
+        return json.loads(self.params)
 
     def __repr__(self):
         return '<Template {}:{}:{}>'.format(User.query.get(self.owner_id).username, self.title, self.id)
