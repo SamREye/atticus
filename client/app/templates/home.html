@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% for contract in contracts %}
+	<li>{{contract.title}}</li>
+{% else %}
+	<p>[No contracts]</p>
+{% endfor %}
+{% for template in templates %}
+	<li>{{template.title}}</li>
+{% else %}
+	<p>[No templates]</p>
+{% endfor %}
+{% endblock %}

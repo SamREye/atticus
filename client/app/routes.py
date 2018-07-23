@@ -2,13 +2,16 @@ from flask import flash, render_template, Response, redirect, url_for
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, CreateTemplateForm
 from flask_login import login_required, current_user, login_user, logout_user
-from app.models import User, Template, Role
+from app.models import User, Template, Contract
 
 @app.route("/")
 @app.route("/index")
+@app.route("/home")
 @login_required
 def index():
-    return Response("It works!"), 200
+    templates = db.session.query(Template).filter(Template.owner_id == current_user.id).all()
+    contracts = db.session.query(Contract).filter(Contract.owner_id == current_user.id).all()
+    return render_template('home.html', title='Home', contracts=contracts, templates=templates)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
