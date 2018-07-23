@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from app.models import User
 
@@ -33,5 +33,11 @@ class CreateTemplateForm(FlaskForm):
     body = TextAreaField('Text')
     party_labels = TextAreaField('Party Labels')
     params = TextAreaField('Parameters')
+    submit = SubmitField('Create')
+
+class CreateProposalForm(FlaskForm):
+    template_id = SelectField('Template', coerce=int)
+    params = TextAreaField('Parameters')
+    parties = TextAreaField('Parties')
     submit = SubmitField('Create')
 

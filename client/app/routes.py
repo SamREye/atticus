@@ -1,8 +1,9 @@
 from flask import flash, render_template, Response, redirect, url_for
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, CreateTemplateForm
+from app.forms import LoginForm, RegistrationForm, CreateTemplateForm, CreateProposalForm
 from flask_login import login_required, current_user, login_user, logout_user
-from app.models import User, Template, Contract
+from app.models import User, Template, Contract, Party
+import json
 
 @app.route("/")
 @app.route("/index")
@@ -80,4 +81,26 @@ def create_template():
 def list_templates():
     templates = Template.query.all()
     return render_template('list_templates.html', templates=templates)
+
+@app.route('/template/<template_id>')
+def show_template(template_id):
+    template = Template.query.filter_by(id=template_id).first_or_404()
+    return render_template('template.html', template=template)
+
+@app.route('/proposal/new', methods=['GET', 'POST'])
+@login_required
+def create_proposal():
+    form = CreateProposalForm()
+    form.template_id.choices = [(t.id, t.title) for t in Template.query.order_by('title')]
+    if form.validate_on_submit():
+        proposal = Contract(template_id=form.template_id.data, params=form.params.data, status="proposed", owner_id=current_user.id)
+        db.session.add(proposal)
+        db.session.commit()
+        for p in json.loads(form.parties.data):
+            party = Party(contract_id=proposal.id, role=p['label'], party_id=User.query.filter(User.username == p['user']).first().id)
+            db.session.add(party)
+        db.session.commit()
+        flash('Proposal saved.')
+        return redirect(url_for('user', username=current_user.username))
+    return render_template('create_proposal.html', title='Create a new Proposal', form=form)
 
