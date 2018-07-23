@@ -27,6 +27,8 @@ class Template(db.Model):
     title = db.Column(db.String(128), unique=True, nullable=False)
     code = db.Column(db.TEXT)
     body = db.Column(db.TEXT)
+    party_labels = db.Column(db.TEXT)
+    params = db.Column(db.TEXT)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
 
     def parse_party_tags(self):

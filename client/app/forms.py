@@ -29,7 +29,9 @@ class RegistrationForm(FlaskForm):
 
 class CreateTemplateForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
-    code = TextAreaField('Code', validators=[DataRequired()])
-    body = TextAreaField('Text', validators=[DataRequired()])
+    code = TextAreaField('Code')
+    body = TextAreaField('Text')
+    party_labels = TextAreaField('Party Labels')
+    params = TextAreaField('Parameters')
     submit = SubmitField('Create')
 

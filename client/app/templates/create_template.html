@@ -25,6 +25,20 @@
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
+        <p>
+            {{ form.party_labels.label }}<br>
+            {{ form.party_labels(size=64) }}<br>
+            {% for error in form.party_labels.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.params.label }}<br>
+            {{ form.params(size=64) }}<br>
+            {% for error in form.params.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}

@@ -54,7 +54,7 @@ def user(username):
 def create_template():
     form = CreateTemplateForm()
     if form.validate_on_submit():
-        template = Template(title=form.title.data, code=form.code.data, body=form.body.data, owner_id=current_user.id)
+        template = Template(title=form.title.data, code=form.code.data, body=form.body.data, party_labels=form.party_labels.data, params=form.params.data, owner_id=current_user.id)
         db.session.add(template)
         db.session.commit()
         parties = template.parse_party_tags()
