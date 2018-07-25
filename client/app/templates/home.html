@@ -3,27 +3,27 @@
 {% block content %}
 <h2>My Current Proposals</h2>
 <table border="1">
-	<tr><th>Title</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
+	<tr><th>ID</th><th>Title</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
 	{% for p in proposals %}
-	<tr><td align="left">{{p.template.title}}</td><td align="left">{{p.owner.username}}</td><td align="left">{{p.status}}</td><td align="right"></td></tr>
+	<tr><td>{{p.id}}</td><td align="left">{{p.template.title}}</td><td align="left">{{p.owner.username}}</td><td align="left">{{p.status}}</td><td align="right"></td></tr>
 	{% else %}
 	<tr><td>[No proposals]</td></tr>
 	{% endfor %}
 </table>
 <h2>My Active Contracts</h2>
 <table border="1">
-	<tr><th>Title</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
+	<tr><th>ID</th><th>Title</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
 	{% for c in contracts %}
-	<tr><td align="left">{{c.template.title}}</td><td align="left">{{c.owner.username}}</td><td align="left">{{c.status}}</td><td align="right"></td></tr>
+	<tr><td>{{c.id}}</td><td align="left">{{c.template.title}}</td><td align="left">{{c.owner.username}}</td><td align="left">{{c.status}}</td><td align="right"></td></tr>
 	{% else %}
 	<tr><td>[No contracts]</td></tr>
 	{% endfor %}
 </table>
 <h2>My Templates</h2>
 <table border="1">
-	<tr><th>Title</th><th>Owner</th><th>Actions</th></tr>
+	<tr><th>ID</th><th>Title</th><th>Owner</th><th>Actions</th></tr>
 	{% for t in templates %}
-	<tr><td align="left">{{t.title}}</td><td align="left">{{t.owner.username}}</td><td align="right"></td></tr>
+	<tr><td>{{t.id}}</td><td align="left">{{t.title}}</td><td align="left">{{t.owner.username}}</td><td align="right"></td></tr>
 	{% else %}
 	<tr><td>[No templates]</td></tr>
 	{% endfor %}
