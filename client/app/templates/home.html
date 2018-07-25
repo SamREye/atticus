@@ -1,22 +1,31 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Proposals</h2>
-{% for proposal in proposals %}
-	<li>{{proposal.id}}</li>
-{% else %}
-	<p>[No proposals]</p>
-{% endfor %}
-<h2>Contracts</h2>
-{% for contract in contracts %}
-	<li>{{contract.title}}</li>
-{% else %}
-	<p>[No contracts]</p>
-{% endfor %}
-<h2>Templates</h2>
-{% for template in templates %}
-	<li>{{template.title}}</li>
-{% else %}
-	<p>[No templates]</p>
-{% endfor %}
+<h2>My Current Proposals</h2>
+<table border="1">
+	<tr><th>Title</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
+	{% for p in proposals %}
+	<tr><td align="left">{{p.template.title}}</td><td align="left">{{p.owner.username}}</td><td align="left">{{p.status}}</td><td align="right"></td></tr>
+	{% else %}
+	<tr><td>[No proposals]</td></tr>
+	{% endfor %}
+</table>
+<h2>My Active Contracts</h2>
+<table border="1">
+	<tr><th>Title</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
+	{% for c in contracts %}
+	<tr><td align="left">{{c.template.title}}</td><td align="left">{{c.owner.username}}</td><td align="left">{{c.status}}</td><td align="right"></td></tr>
+	{% else %}
+	<tr><td>[No contracts]</td></tr>
+	{% endfor %}
+</table>
+<h2>My Templates</h2>
+<table border="1">
+	<tr><th>Title</th><th>Owner</th><th>Actions</th></tr>
+	{% for t in templates %}
+	<tr><td align="left">{{t.title}}</td><td align="left">{{t.owner.username}}</td><td align="right"></td></tr>
+	{% else %}
+	<tr><td>[No templates]</td></tr>
+	{% endfor %}
+</table>
 {% endblock %}

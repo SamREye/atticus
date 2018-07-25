@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<table>
+		<tr><td>Title</td><td>{{contract.template.title}}</td>
+		<tr><td>Status</td><td>{{contract.status}}</td>
+		<tr><td>Owner</td><td>{{contract.owner.username}}</td>
+		<tr><td>Text</td><td>{{contract.template.body}}</td>
+		<tr><td>Code</td><td>{{contract.template.code}}</td>
+		<tr><td>Parties</td>
+			<td>
+				{% for party in parties %}
+				<li>{{party.role}}: {{party.user.username}}</li>
+				{% endfor %}
+			</td>
+			<tr><td>Params</td><td>{{contract.params}}</td>
+	</table>
+{% endblock %}

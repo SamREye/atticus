@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<table>
+		<tr><td>Title</td><td>{{template.title}}</td>
+		<tr><td>Owner</td><td>{{owner.username}}</td>
+		<tr><td>Text</td><td>{{template.body}}</td>
+		<tr><td>Code</td><td>{{template.code}}</td>
+		<tr><td>Parties</td><td>{{template.party_labels}}</td>
+		<tr><td>Params</td><td>{{template.params}}</td>
+	</table>
+{% endblock %}

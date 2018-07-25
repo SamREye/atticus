@@ -30,6 +30,7 @@ class Template(db.Model):
     party_labels = db.Column(db.TEXT)
     params = db.Column(db.TEXT)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    owner = db.relationship('User', backref='template')
 
     def get_party_labels(self):
         return json.loads(self.party_labels)
@@ -46,16 +47,21 @@ class Contract(db.Model):
     params = db.Column(db.TEXT)
     status = db.Column(db.String(32), index=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    owner = db.relationship('User', backref='contract')
+    template = db.relationship('Template', backref='contract')
 
     def __repr__(self):
-        return '<Contract {}:{}:{}>'.format(User.query.get(self.owner_id).username, Template.query.get(self.template_id).title, self.id)
+        return '<Contract {}:{}:{}:{}>'.format(self.id, User.query.get(self.owner_id).username, Template.query.get(self.template_id).title, self.status)
 
 class Party(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     contract_id = db.Column(db.Integer, db.ForeignKey('contract.id'), index=True)
     role = db.Column(db.String(128))
-    party_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     signed_on = db.Column(db.DateTime, nullable=True)
+    contract = db.relationship('Contract', backref='party')
+    user = db.relationship('User', backref='party')
 
     def __repr__(self):
-        return '<Party {}:{}:{}>'.format(self.contract_id, self.role, User.query.get(self.owner_id).username)
+        return '<Party {}:{}:{}>'.format(self.contract_id, self.role, User.query.get(self.user_id).username)
+
