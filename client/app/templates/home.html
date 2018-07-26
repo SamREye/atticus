@@ -3,9 +3,21 @@
 {% block content %}
 <h2>My Current Proposals</h2>
 <table border="1">
-	<tr><th>ID</th><th>Title</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
+	<tr><th>ID</th><th>Title</th><th>Owner</th><th>Status</th><th>Signatures</th><th>Actions</th></tr>
 	{% for p in proposals %}
-	<tr><td>{{p.id}}</td><td align="left">{{p.template.title}}</td><td align="left">{{p.owner.username}}</td><td align="left">{{p.status}}</td><td align="right"></td></tr>
+	<tr><td>{{p.id}}</td><td align="left">{{p.template.title}}</td><td align="left">{{p.owner.username}}</td><td align="left">{{p.status}}</td><td align="right">
+		{% for party in p.party %}
+			{% if party.signed_on == None %}
+				{{party.user.username}}
+			{% else %}
+				<u>{{party.user.username}}</u>
+			{% endif %}
+		{% endfor %}
+		</td><td align="right">
+		{% for action in transitions[p.status] %}
+		<a href={{"/contract/" ~ p.id ~ "/" ~ action}}>{{action}}</a>
+		{% endfor %}
+		</td></tr>
 	{% else %}
 	<tr><td>[No proposals]</td></tr>
 	{% endfor %}

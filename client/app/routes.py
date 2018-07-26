@@ -4,6 +4,17 @@ from app.forms import LoginForm, RegistrationForm, CreateTemplateForm, CreatePro
 from flask_login import login_required, current_user, login_user, logout_user
 from app.models import User, Template, Contract, Party
 import json
+from datetime import datetime
+
+contract_actions = {'propose': 'proposed', 'accept': 'accepted', 'decline': 'declined', 'sign': 'signed', 'unsign': 'unsigned'}
+contract_transitions = {
+    'draft': ['propose'],
+    'proposed': ['accept', 'decline'],
+    'accepted': ['decline', 'sign'],
+    'declined': ['accept'],
+    'signed': ['unsign'],
+    'unsign': ['decline', 'sign']
+}
 
 @app.route("/")
 @app.route("/index")
@@ -12,8 +23,8 @@ import json
 def index():
     templates = db.session.query(Template).filter(Template.owner_id == current_user.id).all()
     contracts = db.session.query(Contract).filter(Party.user_id == current_user.id, Contract.status == "signed").all()
-    proposals = db.session.query(Contract).filter(Party.user_id == current_user.id, Contract.status != "signed", (Contract.owner_id == current_user.id) | (Contract.status == "proposed")).all()
-    return render_template('home.html', title='Home', proposals=proposals, contracts=contracts, templates=templates)
+    proposals = db.session.query(Contract).filter(Party.user_id == current_user.id, Contract.status != "signed", (Contract.owner_id == current_user.id) | (Contract.status != "draft")).all()
+    return render_template('home.html', title='Home', proposals=proposals, contracts=contracts, templates=templates, transitions=contract_transitions)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -112,48 +123,100 @@ def show_draft(contract_id):
     parties = db.session.query(Party).join(Contract).filter(Contract.id == contract_id).all()
     return render_template('contract.html', contract=contract, parties=parties)
 
-@app.route('/contract/propose/<contract_id>')
+@app.route('/contract/<contract_id>/propose')
 @login_required
 def propose(contract_id):
     contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
+    if 'propose' not in contract_transitions[contract.status]:
+        flash('This action is not permitted')
+        return redirect(url_for('index'))
     contract.status = "proposed"
     db.session.commit()
     return redirect(url_for('index'))
 
-@app.route('/contract/counter/<contract_id>')
+@app.route('/contract/<contract_id>/counter')
 @login_required
 def counter_contract(contract_id):
     contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
+    if 'counter' not in contract_transitions[contract.status]:
+        flash('This action is not permitted')
+        return redirect(url_for('index'))
     clone = Contract(template_id=contract.template_id, params=contract.params, status="draft", owner_id=current_user.id)
     db.session.add(clone)
     db.session.commit()
     flash('Counter Proposal created')
     return redirect(url_for('index'))
 
-@app.route('/contract/decline/<contract_id>')
+@app.route('/contract/<contract_id>/decline')
 @login_required
 def decline_proposal(contract_id):
     contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
+    if 'decline' not in contract_transitions[contract.status]:
+        flash('This action is not permitted')
+        return redirect(url_for('index'))
     contract.status = "declined"
     db.session.commit()
     flash('Proposal declined')
     return redirect(url_for('index'))
 
-@app.route('/contract/accept/<contract_id>')
+@app.route('/contract/<contract_id>/accept')
 @login_required
 def accept_contract(contract_id):
     contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
+    if 'accept' not in contract_transitions[contract.status]:
+        flash('This action is not permitted')
+        return redirect(url_for('index'))
     contract.status = "accepted"
     db.session.commit()
     flash('Proposal accepted')
     return redirect(url_for('index'))
 
-@app.route('/contract/sign/<contract_id>')
+@app.route('/contract/<contract_id>/sign')
 @login_required
 def sign_contract(contract_id):
     contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
-    contract.status = "signed"
-    db.session.commit()
-    flash('Contract signed')
+    if 'sign' not in contract_transitions[contract.status]:
+        flash('This action is not permitted')
+        return redirect(url_for('index'))
+    all_signed = True
+    for party in contract.party:
+        if party.user_id == current_user.id:
+            if party.signed_on is None:
+                party.signed_on = datetime.now()
+            else:
+                flash('Contract is already signed by this party')
+        else:
+            if party.signed_on is None:
+                all_signed = False
+    if all_signed:
+        contract.status = "signed"
+        db.session.commit()
+        flash('Contract signed--now in effect!')
+    else:
+        db.session.commit()
+        flash('Contract signed--now pending other signature(s)')
     return redirect(url_for('index'))
 
+@app.route('/contract/<contract_id>/unsign')
+@login_required
+def unsign_contract(contract_id):
+    contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
+    if 'unsign' not in contract_transitions[contract.status]:
+        flash('This action is not permitted')
+        return redirect(url_for('index'))
+    all_signed = True
+    my_party = None
+    for party in contract.party:
+        if party.user_id == current_user.id:
+            my_party = party
+        if party.signed_on is None:
+            all_signed = False
+    if all_signed:
+        flash('Cannot unsign contract that is in effect')
+    else:
+        contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
+        contract.status = "unsigned"
+        my_party.signed_on = None
+        db.session.commit()
+        flash('Contract unsigned')
+    return redirect(url_for('index'))
