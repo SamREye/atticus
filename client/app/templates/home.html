@@ -14,7 +14,10 @@
 			{% endif %}
 		{% endfor %}
 		</td><td align="right">
-		{% for action in transitions[p.status] %}
+		{% for action in transitions[p.status]["owner" if p.owner.id == current_user.id else "cparty"] %}
+		<a href={{"/contract/" ~ p.id ~ "/" ~ action}}>{{action}}</a>
+		{% endfor %}
+		{% for action in transitions[p.status]["any"] %}
 		<a href={{"/contract/" ~ p.id ~ "/" ~ action}}>{{action}}</a>
 		{% endfor %}
 		</td></tr>
@@ -26,7 +29,15 @@
 <table border="1">
 	<tr><th>ID</th><th>Title</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
 	{% for c in contracts %}
-	<tr><td>{{c.id}}</td><td align="left">{{c.template.title}}</td><td align="left">{{c.owner.username}}</td><td align="left">{{c.status}}</td><td align="right"></td></tr>
+	<tr><td>{{c.id}}</td><td align="left">{{c.template.title}}</td><td align="left">{{c.owner.username}}</td><td align="left">{{c.status}}</td>
+		</td><td align="right">
+		{% for action in transitions[c.status]["owner" if c.owner.id == current_user.id else "cparty"] %}
+		<a href={{"/contract/" ~ c.id ~ "/" ~ action}}>{{action}}</a>
+		{% endfor %}
+		{% for action in transitions[c.status]["any"] %}
+		<a href={{"/contract/" ~ c.id ~ "/" ~ action}}>{{action}}</a>
+		{% endfor %}
+		</td></tr>
 	{% else %}
 	<tr><td>[No contracts]</td></tr>
 	{% endfor %}

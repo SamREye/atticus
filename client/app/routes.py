@@ -8,12 +8,12 @@ from datetime import datetime
 
 contract_actions = {'propose': 'proposed', 'accept': 'accepted', 'decline': 'declined', 'sign': 'signed', 'unsign': 'unsigned'}
 contract_transitions = {
-    'draft': ['propose'],
-    'proposed': ['accept', 'decline'],
-    'accepted': ['decline', 'sign'],
-    'declined': ['accept'],
-    'signed': ['unsign'],
-    'unsign': ['decline', 'sign']
+    'draft': {'owner': ['propose', 'edit']},
+    'proposed': {'cparty': ['accept', 'decline', 'counter']},
+    'accepted': {'cparty': ['decline', 'sign']},
+    'declined': {'cparty': ['accept', 'counter']},
+    'signed': {'any': ['unsign']},
+    'unsigned': {'any': ['decline', 'counter', 'sign']}
 }
 
 @app.route("/")
@@ -220,3 +220,4 @@ def unsign_contract(contract_id):
         db.session.commit()
         flash('Contract unsigned')
     return redirect(url_for('index'))
+
