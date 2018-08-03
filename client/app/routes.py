@@ -68,6 +68,8 @@ def user(username):
 @login_required
 def create_template():
     form = CreateTemplateForm()
+    form.party_labels.data = '[]'
+    form.params.data = '[]'
     if form.validate_on_submit():
         template = Template(title=form.title.data, code=form.code.data, body=form.body.data, party_labels=form.party_labels.data, params=form.params.data, owner_id=current_user.id)
         db.session.add(template)

@@ -1,5 +1,22 @@
 {% extends "base.html" %}
 
+{% block scripts %}
+<script>
+function addPartyLabel() {
+	if (document.getElementById("party_labels").value == "") {
+		document.getElementById("party_labels").value = "[]";
+	}
+	labels = JSON.parse(document.getElementById("party_labels").value);
+	labels.push(document.getElementById("party_label").value);
+	document.getElementById("party_labels").value = JSON.stringify(labels);
+	document.getElementById("party_label_display").value = ""
+	for (i = 0; i < labels.length; i++) {
+		document.getElementById("party_label_display").value += labels[i] + "\n";
+	}
+}
+</script>
+{% endblock %}
+
 {% block content %}
     <h1>New Template</h1>
     <form action="" method="post">
@@ -12,13 +29,6 @@
             {% endfor %}
         </p>
         <p>
-            {{ form.code.label }}<br>
-            {{ form.code(size=64) }}<br>
-            {% for error in form.code.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
             {{ form.body.label }}<br>
             {{ form.body(size=64) }}<br>
             {% for error in form.body.errors %}
@@ -26,19 +36,29 @@
             {% endfor %}
         </p>
         <p>
-            {{ form.party_labels.label }}<br>
-            {{ form.party_labels(size=64) }}<br>
-            {% for error in form.party_labels.errors %}
+            {{ form.code.label }}<br>
+            {{ form.code(size=64) }}<br>
+            {% for error in form.code.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>
+            {{ form.party_labels.label }}<br>
+		<span>
+			<input type="text" id="party_label">
+			<button type="button" onclick="addPartyLabel()">Add</button>
+		</span><br>
+	</p>
+	<p>
+	    <textarea id="party_label_display" disabled rows="4" cols="20"></textarea><br>
+        </p>
+        <!--<p>
             {{ form.params.label }}<br>
             {{ form.params(size=64) }}<br>
             {% for error in form.params.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
-        </p>
+	</p>-->
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}
