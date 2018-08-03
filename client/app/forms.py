@@ -31,8 +31,8 @@ class CreateTemplateForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     code = TextAreaField('Code')
     body = TextAreaField('Text')
-    party_labels = HiddenField('Party Labels')
-    params = HiddenField('Parameters')
+    party_labels = HiddenField('Party Labels', default="[]")
+    params = HiddenField('Parameters', default="[]")
     submit = SubmitField('Create')
 
 class CreateProposalForm(FlaskForm):
