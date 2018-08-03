@@ -1,5 +1,6 @@
+from flask_mail import Message
 from flask import flash, render_template, Response, redirect, url_for
-from app import app, db
+from app import app, db, mail
 from app.forms import LoginForm, RegistrationForm, CreateTemplateForm, CreateProposalForm
 from flask_login import login_required, current_user, login_user, logout_user
 from app.models import User, Template, Contract, Party
@@ -126,43 +127,68 @@ def show_draft(contract_id):
 @login_required
 def propose(contract_id):
     contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
-    if 'propose' not in contract_transitions[contract.status]:
+    role = 'owner' if contract.owner_id == current_user.id else 'cparty'
+    if 'propose' not in contract_transitions[contract.status][role]:
         flash('This action is not permitted')
         return redirect(url_for('index'))
     contract.status = "proposed"
     db.session.commit()
+    msg = Message(subject='Someone sent you a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>New Proposal</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the proposal.</p>')
+    mail.send(msg)
     return redirect(url_for('index'))
 
 @app.route('/contract/<contract_id>/counter')
 @login_required
 def counter_contract(contract_id):
     contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
-    if 'counter' not in contract_transitions[contract.status]:
+    role = 'owner' if contract.owner_id == current_user.id else 'cparty'
+    if 'counter' not in contract_transitions[contract.status][role]:
         flash('This action is not permitted')
         return redirect(url_for('index'))
     clone = Contract(template_id=contract.template_id, params=contract.params, status="draft", owner_id=current_user.id)
     db.session.add(clone)
     db.session.commit()
     flash('Counter Proposal created')
+    msg = Message(subject='Someone countered a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>New Counter Proposal</h1><p>Please click <a href="' + url_for('show_draft', contract_id=clone.id, _external=True) + '">here</a> to view the proposal.</p>')
+    mail.send(msg)
+    return redirect(url_for('index'))
+
+@app.route('/contract/<contract_id>/reconsider')
+@login_required
+def reconsider_contract(contract_id):
+    contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
+    role = 'owner' if contract.owner_id == current_user.id else 'cparty'
+    if 'reconsider' not in contract_transitions[contract.status][role]:
+        flash('This action is not permitted')
+        return redirect(url_for('index'))
+    contract.status = "proposed"
+    db.session.commit()
+    flash('Proposal reconsidered')
+    #msg = Message(subject='Someone is reconsidering a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>Proposal Reconsidered</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the proposal.</p>')
+    #mail.send(msg)
     return redirect(url_for('index'))
 
 @app.route('/contract/<contract_id>/decline')
 @login_required
 def decline_proposal(contract_id):
     contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
-    if 'decline' not in contract_transitions[contract.status]:
+    role = 'owner' if contract.owner_id == current_user.id else 'cparty'
+    if 'decline' not in contract_transitions[contract.status][role]:
         flash('This action is not permitted')
         return redirect(url_for('index'))
     contract.status = "declined"
     db.session.commit()
     flash('Proposal declined')
+    msg = Message(subject='Someone declined a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>Proposal Declined</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the proposal.</p>')
+    mail.send(msg)
     return redirect(url_for('index'))
 
 @app.route('/contract/<contract_id>/sign')
 @login_required
 def sign_contract(contract_id):
     contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
-    if 'sign' not in contract_transitions[contract.status]:
+    role = 'owner' if contract.owner_id == current_user.id else 'cparty'
+    if 'sign' not in contract_transitions[contract.status][role]:
         flash('This action is not permitted')
         return redirect(url_for('index'))
     all_signed = True
@@ -183,5 +209,7 @@ def sign_contract(contract_id):
         contract.status = "partially signed"
         db.session.commit()
         flash('Contract signed--now pending other signature(s)')
+    msg = Message(subject='Someone signed a contract', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>New Signature</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the contract.</p>')
+    mail.send(msg)
     return redirect(url_for('index'))
 

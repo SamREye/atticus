@@ -2,6 +2,7 @@
 
 {% block content %}
 <h2>My Current Proposals</h2>
+<input type="button" onclick="location.href='/contract/new';" value="Create New Proposal" />
 <table border="1">
 	<tr><th>ID</th><th>Title</th><th>Owner</th><th>Status</th><th>Signatures</th><th>Actions</th></tr>
 	{% for p in proposals %}
@@ -43,6 +44,7 @@
 	{% endfor %}
 </table>
 <h2>My Templates</h2>
+<input type="button" onclick="location.href='/template/new';" value="Create New Template" />
 <table border="1">
 	<tr><th>ID</th><th>Title</th><th>Owner</th><th>Actions</th></tr>
 	{% for t in templates %}
