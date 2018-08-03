@@ -4,9 +4,9 @@
 <h2>My Current Proposals</h2>
 <input type="button" onclick="location.href='/contract/new';" value="Create New Proposal" />
 <table border="1">
-	<tr><th>ID</th><th>Title</th><th>Owner</th><th>Status</th><th>Signatures</th><th>Actions</th></tr>
+	<tr><th>Title</th><th>Owner</th><th>Status</th><th>Signatures</th><th>Actions</th></tr>
 	{% for p in proposals %}
-	<tr><td>{{p.id}}</td><td align="left">{{p.template.title}}</td><td align="left">{{p.owner.username}}</td><td align="left">{{p.status}}</td><td align="right">
+	<tr><td align="left"><a href="{{url_for('show_draft', contract_id=p.id)}}">{{p.template.title}}</a></td><td align="left">{{p.owner.username}}</td><td align="left">{{p.status}}</td><td align="right">
 		{% for party in p.party %}
 			{% if party.signed_on == None %}
 				{{party.user.username}}
@@ -28,9 +28,9 @@
 </table>
 <h2>My Active Contracts</h2>
 <table border="1">
-	<tr><th>ID</th><th>Title</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
+	<tr><th>Title</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
 	{% for c in contracts %}
-	<tr><td>{{c.id}}</td><td align="left">{{c.template.title}}</td><td align="left">{{c.owner.username}}</td><td align="left">{{c.status}}</td>
+	<tr><td align="left"><a href="{{url_for('show_draft', contract_id=c.id)}}">{{c.template.title}}</a></td><td align="left">{{c.owner.username}}</td><td align="left">{{c.status}}</td>
 		</td><td align="right">
 		{% for action in transitions[c.status]["owner" if c.owner.id == current_user.id else "cparty"] %}
 		<a href={{"/contract/" ~ c.id ~ "/" ~ action}}>{{action}}</a>
@@ -46,9 +46,9 @@
 <h2>My Templates</h2>
 <input type="button" onclick="location.href='/template/new';" value="Create New Template" />
 <table border="1">
-	<tr><th>ID</th><th>Title</th><th>Owner</th><th>Actions</th></tr>
+	<tr><th>Title</th><th>Owner</th><th>Actions</th></tr>
 	{% for t in templates %}
-	<tr><td>{{t.id}}</td><td align="left">{{t.title}}</td><td align="left">{{t.owner.username}}</td><td align="right"></td></tr>
+	<tr><td align="left"><a href="{{url_for('show_template', template_id=t.id)}}">{{t.title}}</a></td><td align="left">{{t.owner.username}}</td><td align="right"></td></tr>
 	{% else %}
 	<tr><td>[No templates]</td></tr>
 	{% endfor %}
