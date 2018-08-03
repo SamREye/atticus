@@ -6,14 +6,13 @@ from app.models import User, Template, Contract, Party
 import json
 from datetime import datetime
 
-contract_actions = {'propose': 'proposed', 'accept': 'accepted', 'decline': 'declined', 'sign': 'signed', 'unsign': 'unsigned'}
+contract_actions = {'propose': 'proposed', 'decline': 'declined', 'reconsider': 'proposed', 'sign': 'signed'}
 contract_transitions = {
     'draft': {'owner': ['propose', 'edit']},
-    'proposed': {'cparty': ['accept', 'decline', 'counter']},
-    'accepted': {'cparty': ['decline', 'sign']},
-    'declined': {'cparty': ['accept', 'counter']},
-    'signed': {'any': ['unsign']},
-    'unsigned': {'any': ['decline', 'counter', 'sign']}
+    'proposed': {'cparty': ['sign', 'decline', 'counter']},
+    'declined': {'cparty': ['reconsider']},
+    'partially signed': {'owner': ['sign']},
+    'signed': {}
 }
 
 @app.route("/")
@@ -159,18 +158,6 @@ def decline_proposal(contract_id):
     flash('Proposal declined')
     return redirect(url_for('index'))
 
-@app.route('/contract/<contract_id>/accept')
-@login_required
-def accept_contract(contract_id):
-    contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
-    if 'accept' not in contract_transitions[contract.status]:
-        flash('This action is not permitted')
-        return redirect(url_for('index'))
-    contract.status = "accepted"
-    db.session.commit()
-    flash('Proposal accepted')
-    return redirect(url_for('index'))
-
 @app.route('/contract/<contract_id>/sign')
 @login_required
 def sign_contract(contract_id):
@@ -193,31 +180,8 @@ def sign_contract(contract_id):
         db.session.commit()
         flash('Contract signed--now in effect!')
     else:
+        contract.status = "partially signed"
         db.session.commit()
         flash('Contract signed--now pending other signature(s)')
-    return redirect(url_for('index'))
-
-@app.route('/contract/<contract_id>/unsign')
-@login_required
-def unsign_contract(contract_id):
-    contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
-    if 'unsign' not in contract_transitions[contract.status]:
-        flash('This action is not permitted')
-        return redirect(url_for('index'))
-    all_signed = True
-    my_party = None
-    for party in contract.party:
-        if party.user_id == current_user.id:
-            my_party = party
-        if party.signed_on is None:
-            all_signed = False
-    if all_signed:
-        flash('Cannot unsign contract that is in effect')
-    else:
-        contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
-        contract.status = "unsigned"
-        my_party.signed_on = None
-        db.session.commit()
-        flash('Contract unsigned')
     return redirect(url_for('index'))
 
