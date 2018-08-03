@@ -10,13 +10,13 @@
    	<link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
    	<link rel="icon" href="/static/favicon.ico" type="image/x-icon">
         {% if title %}
-        <title>AMICUS - {{ title }}</title>
+        <title>ATTICUS - {{ title }}</title>
         {% else %}
-        <title>THEMIS</title>
+        <title>ATTICUS</title>
         {% endif %}
     </head>
     <body>
-	AMICUS
+	ATTICUS
         <div class="topcorner">
 	    Welcome, <a href="{{ url_for('user', username=current_user.username) }}">{{ current_user.username }}</a>
             {% if current_user.is_anonymous %}

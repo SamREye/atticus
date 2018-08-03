@@ -63,5 +63,5 @@ class Party(db.Model):
     user = db.relationship('User', backref='party')
 
     def __repr__(self):
-        return '<Party {}:{}:{}>'.format(self.contract_id, self.role, User.query.get(self.user_id).username)
+        return '<Party {}:{}:{}:{}>'.format(self.contract_id, self.role, User.query.get(self.user_id).username, self.signed_on)
 
