@@ -7,15 +7,16 @@ function getPartyLabels() {
 	xhttp.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
 			labels = JSON.parse(this.responseText);
-			var body = "";
+			var body = "<table>";
 			var party_struct = "[";
 			for (i = 0; i < labels.length; i++) {
-				body += '<h3>' + labels[i] + '</h3>';
-				body += '<input type="text" id="party_label_' + i + '"></input>';
-				body += '<button type="button" onclick="setPartyLabel(' + i + ')">Set</button>';
+				body += '<tr><td>' + labels[i] + '</td>';
+				body += '<td><input type="text" id="party_label_' + i + '"></input>';
+				body += '<button type="button" onclick="setPartyLabel(' + i + ')">Set</button></td></tr>';
 				party_struct += '{"label": "' + labels[i] + '", "user": ""}';
 				if (i < labels.length - 1) {party_struct += ', ';}
 			}
+			body += "</table>"
 			party_struct += "]";
 			document.getElementById("parties_div").innerHTML = body;
 			document.getElementById("parties").value = party_struct;
@@ -37,7 +38,7 @@ window.onload = function() {
 {% endblock %}
 
 {% block content %}
-    <h1>New Proposal</h1>
+    <h1>New Draft</h1>
     <form action="" method="post">
         {{ form.hidden_tag() }}
         <p>
@@ -47,8 +48,10 @@ window.onload = function() {
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
-	<h2>Parties</h2><br>
-	<div id="parties_div"></div><br>
+	<p>
+	Parties
+	<div id="parties_div"></div>
+	</p>
         <!--<p>
             {{ form.params.label }}<br>
             {{ form.params(size=64) }}<br>
