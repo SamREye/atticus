@@ -133,7 +133,7 @@ def create_draft():
 def show_draft(contract_id):
     contract = db.session.query(Contract).join(Template).filter(Contract.id == contract_id).first()
     parties = db.session.query(Party).join(Contract).filter(Contract.id == contract_id).all()
-    return render_template('contract.html', contract=contract, parties=parties)
+    return render_template('contract.html', contract=contract, parties=parties, transitions=contract_transitions)
 
 @app.route('/contract/<contract_id>/propose')
 @login_required

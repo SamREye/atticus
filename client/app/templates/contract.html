@@ -2,17 +2,25 @@
 
 {% block content %}
 	<table>
-		<tr><td>Title</td><td>{{contract.template.title}}</td>
-		<tr><td>Status</td><td>{{contract.status}}</td>
-		<tr><td>Owner</td><td>{{contract.owner.username}}</td>
-		<tr><td>Text</td><td>{{contract.template.body}}</td>
-		<tr><td>Code</td><td>{{contract.template.code}}</td>
+		<tr><td>Title</td><td>{{contract.template.title}}</td></tr>
+		<tr><td>Status</td><td>{{contract.status}}</td></tr>
+		<tr><td>Owner</td><td>{{contract.owner.username}}</td></tr>
+		<tr><td>Text</td><td>{{contract.template.body}}</td></tr>
+		<tr><td>Code</td><td>{{contract.template.code}}</td></tr>
 		<tr><td>Parties</td>
 			<td>
 				{% for party in parties %}
 				<li>{{party.role}}: {{party.user.username}}</li>
 				{% endfor %}
-			</td>
-			<tr><td>Params</td><td>{{contract.params}}</td>
+			</td></tr>
+		<tr><td>Params</td><td>{{contract.params}}</td></tr>
+		<tr><td>Actions</td><td>
+			{% for action in transitions[contract.status]["owner" if contract.owner.id == current_user.id else "cparty"] %}
+                	<a href={{"/contract/" ~ contract.id ~ "/" ~ action}}>{{action}}</a>
+                	{% endfor %}
+                	{% for action in transitions[contract.status]["any"] %}
+                	<a href={{"/contract/" ~ contract.id ~ "/" ~ action}}>{{action}}</a>
+                	{% endfor %}
+		</td></tr>
 	</table>
 {% endblock %}
