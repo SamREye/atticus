@@ -22,9 +22,10 @@ contract_transitions = {
 @login_required
 def index():
     templates = db.session.query(Template).filter(Template.owner_id == current_user.id).all()
-    contracts = db.session.query(Contract).filter(Party.user_id == current_user.id, Contract.status == "signed").all()
-    proposals = db.session.query(Contract).filter(Party.user_id == current_user.id, Contract.status != "signed", (Contract.owner_id == current_user.id) | (Contract.status != "draft")).all()
-    return render_template('home.html', title='Home', proposals=proposals, contracts=contracts, templates=templates, transitions=contract_transitions)
+    contracts = db.session.query(Contract).join(Party).filter(Party.user_id == current_user.id).filter(Contract.status == "signed").all()
+    proposals = db.session.query(Contract).join(Party).filter(Party.user_id == current_user.id).filter(~Contract.status.in_(["signed", "draft"])).all()
+    drafts = db.session.query(Contract).filter(Contract.status == "draft", Contract.owner_id == current_user.id).all()
+    return render_template('home.html', title='Home', proposals=proposals, contracts=contracts, templates=templates, drafts=drafts, transitions=contract_transitions)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

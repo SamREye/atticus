@@ -1,8 +1,28 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>My Current Proposals</h2>
-<input type="button" onclick="location.href='/contract/new';" value="Create New Proposal" />
+<h2>My Drafts</h2>
+<input type="button" onclick="location.href='/contract/new';" value="New Draft" />
+<table border="1">
+        <tr><th>Title</th><th>Parties</th><th>Actions</th></tr>
+        {% for p in proposals %}
+        <tr><td align="left"><a href="{{url_for('show_draft', contract_id=p.id)}}">{{p.template.title}}</a></td><td align="left">
+                {% for party in p.party %}
+                        {{party.user.username}}
+                {% endfor %}
+                </td><td align="right">
+                {% for action in transitions[p.status]["owner" if p.owner.id == current_user.id else "cparty"] %}
+                <a href={{"/contract/" ~ p.id ~ "/" ~ action}}>{{action}}</a>
+                {% endfor %}
+                {% for action in transitions[p.status]["any"] %}
+                <a href={{"/contract/" ~ p.id ~ "/" ~ action}}>{{action}}</a>
+                {% endfor %}
+                </td></tr>
+        {% else %}
+        <tr><td>[No drafts]</td></tr>
+        {% endfor %}
+</table>
+<h2>Proposals</h2>
 <table border="1">
 	<tr><th>Title</th><th>Owner</th><th>Status</th><th>Signatures</th><th>Actions</th></tr>
 	{% for p in proposals %}
@@ -26,7 +46,7 @@
 	<tr><td>[No proposals]</td></tr>
 	{% endfor %}
 </table>
-<h2>My Active Contracts</h2>
+<h2>Active Contracts</h2>
 <table border="1">
 	<tr><th>Title</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
 	{% for c in contracts %}
