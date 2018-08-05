@@ -111,6 +111,11 @@ def show_template(template_id):
     template = Template.query.filter_by(id=template_id).first_or_404()
     return render_template('template.html', template=template, owner=User.query.get(template.owner_id))
 
+@app.route('/template/<template_id>/raw')
+def show_template_raw(template_id):
+    template = Template.query.filter_by(id=template_id).first_or_404()
+    return json.dumps({'text': template.body, 'code': template.code})
+
 @app.route('/contract/new', methods=['GET', 'POST'])
 @login_required
 def create_draft():
