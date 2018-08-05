@@ -29,7 +29,7 @@ class RegistrationForm(FlaskForm):
 
 class CreateTemplateForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
-    code = TextAreaField('Code')
+    code = HiddenField('Code')
     body = TextAreaField('Text')
     party_labels = HiddenField('Party Labels', default="[]")
     params = HiddenField('Parameters', default="[]")
@@ -37,7 +37,7 @@ class CreateTemplateForm(FlaskForm):
 
 class CreateProposalForm(FlaskForm):
     template_id = SelectField('Template', coerce=int)
-    params = TextAreaField('Parameters', default="[]")
-    parties = TextAreaField('Parties', default="[]")
+    params = HiddenField('Parameters', default="[]")
+    parties = HiddenField('Parties', default="[]")
     submit = SubmitField('Create')
 

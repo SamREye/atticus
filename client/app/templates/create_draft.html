@@ -1,30 +1,68 @@
 {% extends "base.html" %}
 
+{% block scripts %}
+<script type="text/javascript">
+function getPartyLabels() {
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			labels = JSON.parse(this.responseText);
+			var body = "";
+			var party_struct = "[";
+			for (i = 0; i < labels.length; i++) {
+				body += '<h3>' + labels[i] + '</h3>';
+				body += '<input type="text" id="party_label_' + i + '"></input>';
+				body += '<button type="button" onclick="setPartyLabel(' + i + ')">Set</button>';
+				party_struct += '{"label": "' + labels[i] + '", "user": ""}';
+				if (i < labels.length - 1) {party_struct += ', ';}
+			}
+			party_struct += "]";
+			document.getElementById("parties_div").innerHTML = body;
+			document.getElementById("parties").value = party_struct;
+		}
+	};
+	xhttp.open("GET", "/template/" + document.getElementById("template_id").value + "/party_labels", true);
+	xhttp.send();
+}
+function setPartyLabel(index) {
+        labels = JSON.parse(document.getElementById("parties").value);
+	my_label = document.getElementById("party_label_" + index).value;
+        labels[index]['user'] = my_label;
+        document.getElementById("parties").value = JSON.stringify(labels);
+}
+window.onload = function() {
+	getPartyLabels();
+}
+</script>
+{% endblock %}
+
 {% block content %}
     <h1>New Proposal</h1>
     <form action="" method="post">
         {{ form.hidden_tag() }}
         <p>
             {{ form.template_id.label }}<br>
-            {{ form.template_id }}<br>
+	    {{ form.template_id(**{'onchange':'getPartyLabels();'}) }}<br>
             {% for error in form.template_id.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
-        <p>
+	<h2>Parties</h2><br>
+	<div id="parties_div"></div><br>
+        <!--<p>
             {{ form.params.label }}<br>
             {{ form.params(size=64) }}<br>
             {% for error in form.params.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
-        </p>
-        <p>
+	</p>-->
+        <!--<p>
             {{ form.parties.label }}<br>
             {{ form.parties(size=64) }}<br>
             {% for error in form.parties.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
-        </p>
+	</p>-->
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}

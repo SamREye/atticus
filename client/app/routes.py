@@ -66,6 +66,12 @@ def user(username):
     user = User.query.filter_by(username=username).first_or_404()
     return render_template('user.html', user=user)
 
+@app.route('/contacts')
+@login_required
+def get_contacts():
+    users = User.query.all()
+    return json.dumps([(u.id, u.username) for u in users])
+
 @app.route('/template/new', methods=['GET', 'POST'])
 @login_required
 def create_template():
@@ -94,6 +100,11 @@ def create_template():
 def list_templates():
     templates = Template.query.all()
     return render_template('list_templates.html', templates=templates)
+
+@app.route('/template/<template_id>/party_labels')
+def get_template_party_labels(template_id):
+    template = Template.query.filter_by(id=template_id).first_or_404()
+    return template.party_labels
 
 @app.route('/template/<template_id>')
 def show_template(template_id):
