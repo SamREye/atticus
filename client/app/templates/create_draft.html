@@ -11,9 +11,12 @@ function getPartyLabels() {
 			var party_struct = "[";
 			for (i = 0; i < labels.length; i++) {
 				body += '<tr><td>' + labels[i] + '</td>';
-				body += '<td><input type="text" id="party_label_' + i + '"></input>';
-				body += '<button type="button" onclick="setPartyLabel(' + i + ')">Set</button></td></tr>';
-				party_struct += '{"label": "' + labels[i] + '", "user": ""}';
+				body += '<td><select id="party_label_' + i + '" onchange="setPartyLabel(' + i + ')">';
+				{% for u in contacts %}
+				body += '<option value="' + {{u.id}} + '">' + '{{u.username}}' + '</option>';
+				{% endfor %}
+				body += '</select></td></tr>';
+				party_struct += '{"label": "' + labels[i] + '", "user_id": "1"}';
 				if (i < labels.length - 1) {party_struct += ', ';}
 			}
 			body += "</table>"
@@ -28,7 +31,7 @@ function getPartyLabels() {
 function setPartyLabel(index) {
         labels = JSON.parse(document.getElementById("parties").value);
 	my_label = document.getElementById("party_label_" + index).value;
-        labels[index]['user'] = my_label;
+        labels[index]['user_id'] = my_label;
         document.getElementById("parties").value = JSON.stringify(labels);
 }
 function updateFields() {
@@ -92,13 +95,13 @@ window.onload = function() {
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
 	</p>-->
-        <!--<p>
+        <p>
             {{ form.parties.label }}<br>
             {{ form.parties(size=64) }}<br>
             {% for error in form.parties.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
-	</p>-->
+	</p>
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}

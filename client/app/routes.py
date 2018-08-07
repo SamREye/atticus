@@ -127,12 +127,13 @@ def create_draft():
         db.session.add(proposal)
         db.session.flush()
         for p in json.loads(form.parties.data):
-            party = Party(contract_id=proposal.id, role=p['label'], user_id=User.query.filter(User.username == p['user']).first().id)
+            party = Party(contract_id=proposal.id, role=p['label'], user_id=p['user_id'])
             db.session.add(party)
         db.session.commit()
         flash('Draft saved.')
         return redirect(url_for('index'))
-    return render_template('create_draft.html', title='Create a new Draft Proposal', form=form)
+    contacts = User.query.all()
+    return render_template('create_draft.html', title='Create a new Draft Proposal', form=form, contacts=contacts)
 
 @app.route('/contract/<contract_id>/clone', methods=['GET', 'POST'])
 @login_required

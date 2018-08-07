@@ -23,7 +23,11 @@
                 	{% endfor %}
 		</td></tr>
 		<tr><td>Parent</td>
+			{% if parent is not none %}
 			<td><a href={{"/contract/" ~ parent.id}}>{{parent.template.title}}</a></td>
+			{% else %}
+			<td>[None]</td>
+			{% endif %}
 		</tr>
 	</table>
 {% endblock %}
