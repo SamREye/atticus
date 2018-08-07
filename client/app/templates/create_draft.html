@@ -52,8 +52,37 @@ function updateFields() {
         xhttp.open("GET", "/template/" + document.getElementById("template_id").value + "/raw", true);
         xhttp.send();
 }
+function setParamValue(index) {
+	params = JSON.parse(document.getElementById("params").value);
+	params[index]['value'] = document.getElementById("param_value_" + index).value;
+	document.getElementById("params").value = JSON.stringify(params);
+}
+function getParams() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                        params = JSON.parse(this.responseText);
+                        var body = "<table>";
+                        var params_struct = "[";
+                        for (i = 0; i < params.length; i++) {
+                                body += '<tr><td>' + params[i]['label'] + '</td>';
+                                body += '<td><input id="param_value_' + i + '" onchange="setParamValue(' + i + ')">';
+                                body += '</input></td></tr>';
+                                params_struct += '{"label": "' + params[i]['label'] + '", "value": ""}';
+                                if (i < params.length - 1) {params_struct += ', ';}
+                        }
+                        body += "</table>"
+                        params_struct += "]";
+                        document.getElementById("params_div").innerHTML = body;
+                        document.getElementById("params").value = params_struct;
+                }
+        };
+        xhttp.open("GET", "/template/" + document.getElementById("template_id").value + "/params", true);
+        xhttp.send();
+}
 function updateTemplate() {
 	getPartyLabels();
+	getParams();
 	updateFields();
 }
 window.onload = function() {
@@ -88,17 +117,21 @@ window.onload = function() {
 	Parties:<br>
 	<div id="parties_div"></div><br>
 	</p>
-        <!--<p>
-            {{ form.params.label }}<br>
-            {{ form.params(size=64) }}<br>
-            {% for error in form.params.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-	</p>-->
+	<p>
+	Parameters:<br>
+	<div id="params_div"></div><br>
+	</p>
         <p>
             {{ form.parties.label }}<br>
             {{ form.parties(size=64) }}<br>
             {% for error in form.parties.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+	</p>
+        <p>
+            {{ form.params.label }}<br>
+            {{ form.params(size=64) }}<br>
+            {% for error in form.params.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
 	</p>

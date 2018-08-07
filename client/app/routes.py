@@ -107,6 +107,11 @@ def get_template_party_labels(template_id):
     template = Template.query.filter_by(id=template_id).first_or_404()
     return template.party_labels
 
+@app.route('/template/<template_id>/params')
+def get_template_params(template_id):
+    template = Template.query.filter_by(id=template_id).first_or_404()
+    return template.params
+
 @app.route('/template/<template_id>')
 def show_template(template_id):
     template = Template.query.filter_by(id=template_id).first_or_404()

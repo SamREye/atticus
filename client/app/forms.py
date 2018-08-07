@@ -37,7 +37,7 @@ class CreateTemplateForm(FlaskForm):
 
 class CreateProposalForm(FlaskForm):
     template_id = SelectField('Template', coerce=int)
-    params = HiddenField('Parameters', default="[]")
+    params = TextAreaField('Parameters', default="[]")
     parties = TextAreaField('Parties', default="[]")
     submit = SubmitField('Create')
 
