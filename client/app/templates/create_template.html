@@ -14,6 +14,39 @@ function addPartyLabel() {
 		document.getElementById("party_label_display").value += labels[i] + "\n";
 	}
 }
+function addParam(){
+	params = JSON.parse(document.getElementById("params").value);
+	params.push({"label": 'param_' + (params.length + 1), "datatype": "string"});
+	document.getElementById("params").value = JSON.stringify(params);
+	renderParams();
+}
+function setParam(index, field) {
+	params = JSON.parse(document.getElementById("params").value);
+	params[index][field] = document.getElementById('param_label_' + index + '_' + field).value;
+	document.getElementById("params").value = JSON.stringify(params);
+	renderParams();
+}
+function renderParams(){
+	params = JSON.parse(document.getElementById("params").value);
+	var fields = [{"id": "label", "display": "Label"}, {"id": "datatype", "display": "Type"}];
+	var datatypes = ["string", "number", "boolean"];
+	var body = "<table>";
+	for (j = 0; j < fields.length; j++) {
+		body += '<th>' + fields[j]['display'] + '</th>';
+	}
+	for (i = 0; i < params.length; i++) {
+		body += '<tr>';
+		for (j = 0; j < fields.length; j++) {
+			body += "<td>";
+			body += '<input type="text" id="param_label_' + i + '_' + fields[j]['id'] + '" onchange="setParam(' + i + ', \'' + fields[j]['id'] + '\');" ';
+			body += 'value="' + params[i][fields[j]['id']] + '">'
+			body += "</td>";
+		}
+		body += '</tr>';
+	}
+	body += "</table>";
+	document.getElementById("param_display").innerHTML = body;
+}
 </script>
 {% endblock %}
 
@@ -46,19 +79,23 @@ function addPartyLabel() {
             {{ form.party_labels.label }}<br>
 		<span>
 			<input type="text" id="party_label">
-			<button type="button" onclick="addPartyLabel()">Add</button>
+			<button type="button" onclick="addPartyLabel()">Add Party</button>
 		</span><br>
 	</p>
 	<p>
 	    <textarea id="party_label_display" disabled rows="4" cols="20"></textarea><br>
         </p>
-        <!--<p>
+	<p>
+	    <div id="param_display"></div><br>
+	    <button type="button" onclick="addParam()">Add Parameter</button>
+        </p>
+        <p>
             {{ form.params.label }}<br>
             {{ form.params(size=64) }}<br>
             {% for error in form.params.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
-	</p>-->
+	</p>
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}

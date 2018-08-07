@@ -32,7 +32,7 @@ class CreateTemplateForm(FlaskForm):
     code = HiddenField('Code')
     body = TextAreaField('Text')
     party_labels = HiddenField('Party Labels', default="[]")
-    params = HiddenField('Parameters', default="[]")
+    params = TextAreaField('Parameters', default="[]")
     submit = SubmitField('Create')
 
 class CreateProposalForm(FlaskForm):
