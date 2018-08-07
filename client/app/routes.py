@@ -9,11 +9,12 @@ from datetime import datetime
 
 contract_actions = {'propose': 'proposed', 'decline': 'declined', 'reconsider': 'proposed', 'sign': 'signed'}
 contract_transitions = {
-    'draft': {'owner': ['propose', 'edit']},
-    'proposed': {'cparty': ['sign', 'decline', 'counter']},
-    'declined': {'cparty': ['reconsider']},
-    'partially signed': {'owner': ['sign']},
-    'signed': {}
+    'draft': {'owner': ['propose', 'edit', 'archive']},
+    'proposed': {'cparty': ['sign', 'decline', 'counter'], 'owner': ['withdraw']},
+    'declined': {'cparty': ['reconsider', 'archive'], 'owner': ['archive']},
+    'partially signed': {'cparty': ['withdraw'], 'owner': ['sign', 'withdraw']},
+    'signed': {},
+    'archived': {}
 }
 
 @app.route("/")
@@ -79,7 +80,7 @@ def create_template():
     if form.validate_on_submit():
         template = Template(title=form.title.data, code=form.code.data, body=form.body.data, party_labels=form.party_labels.data, params=form.params.data, owner_id=current_user.id)
         db.session.add(template)
-        db.session.commit()
+        db.session.flush()
         parties = template.get_party_labels()
         if len(parties) > 0:
             flash('{} Parties have been established'.format(len(parties)))
@@ -124,7 +125,7 @@ def create_draft():
     if form.validate_on_submit():
         proposal = Contract(template_id=form.template_id.data, params=form.params.data, status="draft", owner_id=current_user.id)
         db.session.add(proposal)
-        db.session.commit()
+        db.session.flush()
         for p in json.loads(form.parties.data):
             party = Party(contract_id=proposal.id, role=p['label'], user_id=User.query.filter(User.username == p['user']).first().id)
             db.session.add(party)
@@ -140,6 +141,18 @@ def show_draft(contract_id):
     parties = db.session.query(Party).join(Contract).filter(Contract.id == contract_id).all()
     return render_template('contract.html', contract=contract, parties=parties, transitions=contract_transitions)
 
+@app.route('/contract/<contract_id>/archive')
+@login_required
+def archive_draft(contract_id):
+    contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
+    role = 'owner' if contract.owner_id == current_user.id else 'cparty'
+    if 'propose' not in contract_transitions[contract.status][role]:
+        flash('This action is not permitted')
+        return redirect(url_for('index'))
+    contract.status = "archived"
+    db.session.commit()
+    return redirect(url_for('index'))
+
 @app.route('/contract/<contract_id>/propose')
 @login_required
 def propose(contract_id):
@@ -151,6 +164,20 @@ def propose(contract_id):
     contract.status = "proposed"
     db.session.commit()
     msg = Message(subject='Someone sent you a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>New Proposal</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the proposal.</p>')
+    mail.send(msg)
+    return redirect(url_for('index'))
+
+@app.route('/contract/<contract_id>/withdraw')
+@login_required
+def withdraw(contract_id):
+    contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
+    role = 'owner' if contract.owner_id == current_user.id else 'cparty'
+    if 'withdraw' not in contract_transitions[contract.status][role]:
+        flash('This action is not permitted')
+        return redirect(url_for('index'))
+    contract.status = "draft"
+    db.session.commit()
+    msg = Message(subject='A proposal of yours has been withdrawn', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>Proposal Withdrawn</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the proposal.</p>')
     mail.send(msg)
     return redirect(url_for('index'))
 
