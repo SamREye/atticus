@@ -166,7 +166,6 @@ def show_draft(contract_id):
     parent = None
     if contract.parent_id is not None:
         parent = db.session.query(Contract).join(Template).filter(Contract.id == contract.parent_id).first()
-    print(parent)
     return render_template('contract.html', contract=contract, parties=parties, transitions=contract_transitions, parent=parent)
 
 @app.route('/contract/<contract_id>/archive')
