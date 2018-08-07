@@ -24,7 +24,7 @@ contract_transitions = {
 def index():
     templates = db.session.query(Template).filter(Template.owner_id == current_user.id).all()
     contracts = db.session.query(Contract).join(Party).filter(Party.user_id == current_user.id).filter(Contract.status == "signed").all()
-    proposals = db.session.query(Contract).join(Party).filter(Party.user_id == current_user.id).filter(~Contract.status.in_(["signed", "draft"])).all()
+    proposals = db.session.query(Contract).join(Party).filter(Party.user_id == current_user.id).filter(~Contract.status.in_(["signed", "draft", "archived"])).all()
     drafts = db.session.query(Contract).filter(Contract.status == "draft", Contract.owner_id == current_user.id).all()
     return render_template('home.html', title='Home', proposals=proposals, contracts=contracts, templates=templates, drafts=drafts, transitions=contract_transitions)
 
