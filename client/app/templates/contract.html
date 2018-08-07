@@ -22,5 +22,8 @@
                 	<a href={{"/contract/" ~ contract.id ~ "/" ~ action}}>{{action}}</a>
                 	{% endfor %}
 		</td></tr>
+		<tr><td>Parent</td>
+			<td><a href={{"/contract/" ~ parent.id}}>{{parent.template.title}}</a></td>
+		</tr>
 	</table>
 {% endblock %}

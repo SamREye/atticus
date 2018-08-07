@@ -145,7 +145,7 @@ def clone_draft(contract_id):
     form = CloneProposalForm()
     form.template_id.choices = [(t.id, t.title) for t in Template.query.order_by('title')]
     if form.validate_on_submit():
-        proposal = Contract(template_id=form.template_id.data, params=form.params.data, status="draft", owner_id=current_user.id, parent_id=contract.id)
+        proposal = Contract(template_id=form.template_id.data, params=form.params.data, status="draft", owner_id=current_user.id, parent_id=(contract.parent_id or contract.id))
         db.session.add(proposal)
         db.session.flush()
         for p in contract.party:
@@ -163,7 +163,11 @@ def clone_draft(contract_id):
 def show_draft(contract_id):
     contract = db.session.query(Contract).join(Template).filter(Contract.id == contract_id).first_or_404()
     parties = db.session.query(Party).join(Contract).filter(Contract.id == contract_id).all()
-    return render_template('contract.html', contract=contract, parties=parties, transitions=contract_transitions)
+    parent = None
+    if contract.parent_id is not None:
+        parent = db.session.query(Contract).join(Template).filter(Contract.id == contract.parent_id).first()
+    print(parent)
+    return render_template('contract.html', contract=contract, parties=parties, transitions=contract_transitions, parent=parent)
 
 @app.route('/contract/<contract_id>/archive')
 @login_required
