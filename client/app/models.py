@@ -47,6 +47,7 @@ class Contract(db.Model):
     params = db.Column(db.TEXT)
     status = db.Column(db.String(32), index=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('contract.id'), index=True, nullable=True)
     owner = db.relationship('User', backref='contract')
     template = db.relationship('Template', backref='contract')
 

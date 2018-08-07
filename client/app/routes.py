@@ -1,7 +1,7 @@
 from flask_mail import Message
 from flask import flash, render_template, Response, redirect, url_for
 from app import app, db, mail
-from app.forms import LoginForm, RegistrationForm, CreateTemplateForm, CreateProposalForm
+from app.forms import LoginForm, RegistrationForm, CreateTemplateForm, CreateProposalForm, CloneProposalForm
 from flask_login import login_required, current_user, login_user, logout_user
 from app.models import User, Template, Contract, Party
 import json
@@ -9,7 +9,7 @@ from datetime import datetime
 
 contract_actions = {'propose': 'proposed', 'decline': 'declined', 'reconsider': 'proposed', 'sign': 'signed'}
 contract_transitions = {
-    'draft': {'owner': ['propose', 'edit', 'archive']},
+    'draft': {'owner': ['propose', 'clone', 'archive']},
     'proposed': {'cparty': ['sign', 'decline', 'counter'], 'owner': ['withdraw']},
     'declined': {'cparty': ['reconsider', 'archive'], 'owner': ['archive']},
     'partially signed': {'cparty': ['withdraw'], 'owner': ['sign', 'withdraw']},
@@ -134,10 +134,34 @@ def create_draft():
         return redirect(url_for('index'))
     return render_template('create_draft.html', title='Create a new Draft Proposal', form=form)
 
+@app.route('/contract/<contract_id>/clone', methods=['GET', 'POST'])
+@login_required
+def clone_draft(contract_id):
+    contract = db.session.query(Contract).join(Template).filter(Contract.id == contract_id).first()
+    role = 'owner' if contract.owner_id == current_user.id else 'cparty'
+    if 'clone' not in contract_transitions[contract.status][role]:
+        flash('This action is not permitted')
+        return redirect(url_for('index'))
+    form = CloneProposalForm()
+    form.template_id.choices = [(t.id, t.title) for t in Template.query.order_by('title')]
+    if form.validate_on_submit():
+        proposal = Contract(template_id=form.template_id.data, params=form.params.data, status="draft", owner_id=current_user.id, parent_id=contract.id)
+        db.session.add(proposal)
+        db.session.flush()
+        for p in contract.party:
+            party = Party(contract_id=proposal.id, role=p.role, user_id=p.user_id)
+            db.session.add(party)
+        db.session.commit()
+        flash('Draft cloned.')
+        return redirect(url_for('index'))
+    form.template_id.data = contract.template_id
+    form.params.data = contract.params
+    return render_template('clone_draft.html', title='Clone a Draft Proposal', form=form, parties=contract.party)
+
 @app.route('/contract/<contract_id>')
 @login_required
 def show_draft(contract_id):
-    contract = db.session.query(Contract).join(Template).filter(Contract.id == contract_id).first()
+    contract = db.session.query(Contract).join(Template).filter(Contract.id == contract_id).first_or_404()
     parties = db.session.query(Party).join(Contract).filter(Contract.id == contract_id).all()
     return render_template('contract.html', contract=contract, parties=parties, transitions=contract_transitions)
 
@@ -257,3 +281,7 @@ def sign_contract(contract_id):
     mail.send(msg)
     return redirect(url_for('index'))
 
+from flask_mail import Message
+from flask import flash, render_template, Response, redirect, url_for
+from app import app, db, mail
+from app.forms import LoginForm, RegistrationForm, CreateTemplateForm, CreateProposalForm

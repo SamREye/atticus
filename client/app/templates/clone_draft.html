@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block scripts %}
+<script type="text/javascript">
+function updateFields() {
+	var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                        fields = JSON.parse(this.responseText);
+			var body = '<textarea id="body_text" rows="10" cols="50">';
+			body += fields['text'];
+			body += '</textarea>';
+			document.getElementById("text_div").innerHTML = body
+			var code = '<textarea id="body_code" rows="10" cols="50">';
+			code += fields['code'];
+			code += '</textarea>';
+			document.getElementById("code_div").innerHTML = code
+                }
+        };
+        xhttp.open("GET", "/template/" + document.getElementById("template_id").value + "/raw", true);
+        xhttp.send();
+}
+window.onload = function() {
+	updateFields();
+}
+</script>
+{% endblock %}
+
+{% block content %}
+    <h1>Clone Draft</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.template_id.label }}:<br>
+	    {{ form.template_id(**{'onchange':'updateFields();'}) }}<br>
+            {% for error in form.template_id.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+	<p>
+	Text:<br>
+	<div id="text_div">
+		<textarea id="body_text" disabled rows="10" cols="50"></textarea>
+	</div>
+	<p>
+	<p>
+	Code:<br>
+	<div id="code_div">
+		<textarea id="body_code" disabled rows="10" cols="50"></textarea>
+	</div>
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}
