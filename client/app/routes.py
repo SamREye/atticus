@@ -9,7 +9,7 @@ from datetime import datetime
 
 contract_actions = {'propose': 'proposed', 'decline': 'declined', 'reconsider': 'proposed', 'sign': 'signed'}
 contract_transitions = {
-    'draft': {'owner': ['propose', 'clone', 'archive']},
+    'draft': {'owner': ['propose', 'edit', 'archive']},
     'proposed': {'cparty': ['sign', 'decline', 'counter'], 'owner': ['withdraw']},
     'declined': {'cparty': ['reconsider', 'archive'], 'owner': ['archive']},
     'partially signed': {'cparty': ['withdraw'], 'owner': ['sign', 'withdraw']},
@@ -145,12 +145,12 @@ def create_draft():
     contacts = User.query.all()
     return render_template('create_draft.html', title='Create a new Draft Proposal', form=form, contacts=contacts)
 
-@app.route('/contract/<contract_id>/clone', methods=['GET', 'POST'])
+@app.route('/contract/<contract_id>/edit', methods=['GET', 'POST'])
 @login_required
-def clone_draft(contract_id):
+def edit_draft(contract_id):
     contract = db.session.query(Contract).join(Template).filter(Contract.id == contract_id).first()
     role = 'owner' if contract.owner_id == current_user.id else 'cparty'
-    if 'clone' not in contract_transitions[contract.status][role]:
+    if 'edit' not in contract_transitions[contract.status][role]:
         flash('This action is not permitted')
         return redirect(url_for('index'))
     form = CloneProposalForm()
@@ -163,11 +163,11 @@ def clone_draft(contract_id):
             party = Party(contract_id=proposal.id, role=p.role, user_id=p.user_id)
             db.session.add(party)
         db.session.commit()
-        flash('Draft cloned.')
+        flash('Draft edited.')
         return redirect(url_for('index'))
     form.template_id.data = contract.template_id
     form.params.data = contract.params
-    return render_template('clone_draft.html', title='Clone a Draft Proposal', form=form, contract_id=contract_id, parties=contract.party)
+    return render_template('edit_draft.html', title='Edit a Draft Proposal', form=form, contract_id=contract_id, parties=contract.party)
 
 @app.route('/contract/<contract_id>')
 @login_required
