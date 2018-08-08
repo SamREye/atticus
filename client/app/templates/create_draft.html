@@ -103,38 +103,26 @@ window.onload = function() {
             {% endfor %}
         </p>
 	<p>
-	Text:<br>
+	Text<br>
 	<div id="text_div">
 		<textarea id="body_text" disabled rows="10" cols="50"></textarea>
 	</div>
-	<p>
-	<p>
-	Code:<br>
+	</p>
+	<!--<p>
+	Code<br>
 	<div id="code_div">
 		<textarea id="body_code" disabled rows="10" cols="50"></textarea>
-	</div>
+	</div>-->
 	<p>
-	Parties:<br>
+	Parties<br>
 	<div id="parties_div"></div><br>
 	</p>
 	<p>
-	Parameters:<br>
+	Parameters<br>
 	<div id="params_div"></div><br>
 	</p>
-        <p>
-            {{ form.parties.label }}<br>
-            {{ form.parties(size=64) }}<br>
-            {% for error in form.parties.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-	</p>
-        <p>
-            {{ form.params.label }}<br>
-            {{ form.params(size=64) }}<br>
-            {% for error in form.params.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-	</p>
+        {{ form.parties }}
+        {{ form.params }}
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}

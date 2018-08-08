@@ -68,13 +68,13 @@ function renderParams(){
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
-        <p>
+        <!--<p>
             {{ form.code.label }}<br>
             {{ form.code(size=64) }}<br>
             {% for error in form.code.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
-        </p>
+	</p>-->
         <p>
             {{ form.party_labels.label }}<br>
 		<span>
@@ -86,16 +86,11 @@ function renderParams(){
 	    <textarea id="party_label_display" disabled rows="4" cols="20"></textarea><br>
         </p>
 	<p>
-	    <div id="param_display"></div><br>
+	    Parameters<br>
+	    <div id="param_display">[No Parameters]</div><br>
 	    <button type="button" onclick="addParam()">Add Parameter</button>
         </p>
-        <p>
-            {{ form.params.label }}<br>
-            {{ form.params(size=64) }}<br>
-            {% for error in form.params.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-	</p>
+        {{ form.params }}
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}

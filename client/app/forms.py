@@ -32,13 +32,13 @@ class CreateTemplateForm(FlaskForm):
     code = HiddenField('Code')
     body = TextAreaField('Text')
     party_labels = HiddenField('Party Labels', default="[]")
-    params = TextAreaField('Parameters', default="[]")
+    params = HiddenField('Parameters', default="[]")
     submit = SubmitField('Create')
 
 class CreateProposalForm(FlaskForm):
     template_id = SelectField('Template', coerce=int)
-    params = TextAreaField('Parameters', default="[]")
-    parties = TextAreaField('Parties', default="[]")
+    params = HiddenField('Parameters', default="[]")
+    parties = HiddenField('Parties', default="[]")
     submit = SubmitField('Create')
 
 class CloneProposalForm(FlaskForm):
