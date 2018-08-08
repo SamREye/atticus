@@ -41,8 +41,8 @@ class CreateProposalForm(FlaskForm):
     parties = HiddenField('Parties', default="[]")
     submit = SubmitField('Create')
 
-class CloneProposalForm(FlaskForm):
+class EditProposalForm(FlaskForm):
     template_id = SelectField('Template', coerce=int)
     params = HiddenField('Parameters', default="[]")
-    submit = SubmitField('Clone')
+    submit = SubmitField('Edit')
 

@@ -1,7 +1,7 @@
 from flask_mail import Message
 from flask import flash, render_template, Response, redirect, url_for
 from app import app, db, mail
-from app.forms import LoginForm, RegistrationForm, CreateTemplateForm, CreateProposalForm, CloneProposalForm
+from app.forms import LoginForm, RegistrationForm, CreateTemplateForm, CreateProposalForm, EditProposalForm
 from flask_login import login_required, current_user, login_user, logout_user
 from app.models import User, Template, Contract, Party
 import json
@@ -153,7 +153,7 @@ def edit_draft(contract_id):
     if 'edit' not in contract_transitions[contract.status][role]:
         flash('This action is not permitted')
         return redirect(url_for('index'))
-    form = CloneProposalForm()
+    form = EditProposalForm()
     form.template_id.choices = [(t.id, t.title) for t in Template.query.order_by('title')]
     if form.validate_on_submit():
         proposal = Contract(template_id=form.template_id.data, params=form.params.data, status="draft", owner_id=current_user.id, parent_id=(contract.parent_id or contract.id))
