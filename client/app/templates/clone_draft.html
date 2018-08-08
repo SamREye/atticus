@@ -20,8 +20,38 @@ function updateFields() {
         xhttp.open("GET", "/template/" + document.getElementById("template_id").value + "/raw", true);
         xhttp.send();
 }
+function setParamValue(index) {
+        params = JSON.parse(document.getElementById("params").value);
+        params[index]['value'] = document.getElementById("param_value_" + index).value;
+        document.getElementById("params").value = JSON.stringify(params);
+}
+function getParams() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                        params = JSON.parse(this.responseText);
+                        var body = "<table>";
+                        var params_struct = "[";
+                        for (i = 0; i < params.length; i++) {
+                                body += '<tr><td>' + params[i]['label'] + '</td>';
+                                body += '<td><input id="param_value_' + i + '" onchange="setParamValue(' + i + ')" value="' + params[i]['value'] + '">';
+                                body += '</input></td></tr>';
+                                params_struct += '{"label": "' + params[i]['label'] + '", "value": "' + params[i]['value'] + '"}';
+                                if (i < params.length - 1) {params_struct += ', ';}
+                        }
+                        body += "</table>"
+                        params_struct += "]";
+                        document.getElementById("params_div").innerHTML = body;
+                        document.getElementById("params").value = params_struct;
+                }
+        };
+	xhttp.open("GET", "/contract/{{ contract_id }}/params", true);
+        xhttp.send();
+}
+
 window.onload = function() {
 	updateFields();
+	getParams();
 }
 </script>
 {% endblock %}
@@ -38,16 +68,21 @@ window.onload = function() {
             {% endfor %}
         </p>
 	<p>
-	Text:<br>
+	Text<br>
 	<div id="text_div">
 		<textarea id="body_text" disabled rows="10" cols="50"></textarea>
 	</div>
 	<p>
 	<!--<p>
-	Code:<br>
+	Code<br>
 	<div id="code_div">
 		<textarea id="body_code" disabled rows="10" cols="50"></textarea>
 	</div>-->
+	<p>
+        Parameters<br>
+        <div id="params_div"></div><br>
+        </p>
+        {{ form.params }}
         <p>{{ form.submit() }}</p>
     </form>
 {% endblock %}

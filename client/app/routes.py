@@ -112,6 +112,11 @@ def get_template_params(template_id):
     template = Template.query.filter_by(id=template_id).first_or_404()
     return template.params
 
+@app.route('/contract/<contract_id>/params')
+def get_contract_params(contract_id):
+    contract = Contract.query.filter_by(id=contract_id).first_or_404()
+    return contract.params
+
 @app.route('/template/<template_id>')
 def show_template(template_id):
     template = Template.query.filter_by(id=template_id).first_or_404()
@@ -162,7 +167,7 @@ def clone_draft(contract_id):
         return redirect(url_for('index'))
     form.template_id.data = contract.template_id
     form.params.data = contract.params
-    return render_template('clone_draft.html', title='Clone a Draft Proposal', form=form, parties=contract.party)
+    return render_template('clone_draft.html', title='Clone a Draft Proposal', form=form, contract_id=contract_id, parties=contract.party)
 
 @app.route('/contract/<contract_id>')
 @login_required
