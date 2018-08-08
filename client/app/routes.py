@@ -229,6 +229,9 @@ def counter_contract(contract_id):
         return redirect(url_for('index'))
     clone = Contract(template_id=contract.template_id, params=contract.params, status="draft", owner_id=current_user.id)
     db.session.add(clone)
+    db.session.flush()
+    for p in contract.party:
+        db.session.add(Party(contract_id=clone.id, user_id=p.user_id, role=p.role))
     db.session.commit()
     flash('Counter Proposal created')
     msg = Message(subject='Someone countered a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>New Counter Proposal</h1><p>Please click <a href="' + url_for('show_draft', contract_id=clone.id, _external=True) + '">here</a> to view the proposal.</p>')
