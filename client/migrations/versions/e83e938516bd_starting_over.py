@@ -1,8 +1,8 @@
-"""Added relationships
+"""starting over
 
-Revision ID: fb7319b0edb5
+Revision ID: e83e938516bd
 Revises: 
-Create Date: 2018-07-24 13:51:53.602986
+Create Date: 2018-08-09 11:25:02.276562
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fb7319b0edb5'
+revision = 'e83e938516bd'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -43,14 +43,18 @@ def upgrade():
     op.create_table('contract',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('template_id', sa.Integer(), nullable=True),
+    sa.Column('memo', sa.TEXT(), nullable=True),
     sa.Column('params', sa.TEXT(), nullable=True),
     sa.Column('status', sa.String(length=32), nullable=True),
     sa.Column('owner_id', sa.Integer(), nullable=True),
+    sa.Column('parent_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['owner_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['parent_id'], ['contract.id'], ),
     sa.ForeignKeyConstraint(['template_id'], ['template.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_contract_owner_id'), 'contract', ['owner_id'], unique=False)
+    op.create_index(op.f('ix_contract_parent_id'), 'contract', ['parent_id'], unique=False)
     op.create_index(op.f('ix_contract_status'), 'contract', ['status'], unique=False)
     op.create_index(op.f('ix_contract_template_id'), 'contract', ['template_id'], unique=False)
     op.create_table('party',
@@ -75,6 +79,7 @@ def downgrade():
     op.drop_table('party')
     op.drop_index(op.f('ix_contract_template_id'), table_name='contract')
     op.drop_index(op.f('ix_contract_status'), table_name='contract')
+    op.drop_index(op.f('ix_contract_parent_id'), table_name='contract')
     op.drop_index(op.f('ix_contract_owner_id'), table_name='contract')
     op.drop_table('contract')
     op.drop_index(op.f('ix_template_owner_id'), table_name='template')

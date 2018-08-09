@@ -102,6 +102,13 @@ window.onload = function() {
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
+        <p>
+            {{ form.memo.label }}:<br>
+	    {{ form.memo }}<br>
+            {% for error in form.memo.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
 	<p>
 	Text<br>
 	<div id="text_div">

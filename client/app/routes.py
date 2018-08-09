@@ -6,6 +6,7 @@ from flask_login import login_required, current_user, login_user, logout_user
 from app.models import User, Template, Contract, Party
 import json
 from datetime import datetime
+from sqlalchemy.orm import aliased
 
 contract_actions = {'propose': 'proposed', 'decline': 'declined', 'reconsider': 'proposed', 'sign': 'signed'}
 contract_transitions = {
@@ -23,9 +24,11 @@ contract_transitions = {
 @login_required
 def index():
     templates = db.session.query(Template).filter(Template.owner_id == current_user.id).all()
-    contracts = db.session.query(Contract).join(Party).filter(Party.user_id == current_user.id).filter(Contract.status == "signed").all()
-    proposals = db.session.query(Contract).join(Party).filter(Party.user_id == current_user.id).filter(~Contract.status.in_(["signed", "draft", "archived"])).all()
-    drafts = db.session.query(Contract).filter(Contract.status == "draft", Contract.owner_id == current_user.id).all()
+    child = aliased(Contract)
+    parent = aliased(Contract)
+    contracts = db.session.query(child, parent, Template).join(Template).join(Party).join(parent, child.parent_id == parent.id).filter(Party.user_id == current_user.id).filter(child.status == "signed").all()
+    proposals = db.session.query(child, parent, Template).join(Template).join(Party).join(parent, child.parent_id == parent.id).filter(Party.user_id == current_user.id).filter(~child.status.in_(["signed", "draft", "archived"])).all()
+    drafts = db.session.query(child, parent, Template).join(Template).join(Party).join(parent, child.parent_id == parent.id).filter(Contract.owner_id == current_user.id).filter(child.status == "draft").all()
     return render_template('home.html', title='Home', proposals=proposals, contracts=contracts, templates=templates, drafts=drafts, transitions=contract_transitions)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -133,7 +136,7 @@ def create_draft():
     form = CreateProposalForm()
     form.template_id.choices = [(t.id, t.title) for t in Template.query.order_by('title')]
     if form.validate_on_submit():
-        proposal = Contract(template_id=form.template_id.data, params=form.params.data, status="draft", owner_id=current_user.id)
+        proposal = Contract(template_id=form.template_id.data, memo=form.memo.data, params=form.params.data, status="draft", owner_id=current_user.id)
         db.session.add(proposal)
         db.session.flush()
         for p in json.loads(form.parties.data):
@@ -149,6 +152,7 @@ def create_draft():
 @login_required
 def edit_draft(contract_id):
     contract = db.session.query(Contract).join(Template).filter(Contract.id == contract_id).first()
+    parent = contract if contract.parent_id is None else Contract.query.get(contract.parent_id)
     role = 'owner' if contract.owner_id == current_user.id else 'cparty'
     if 'edit' not in contract_transitions[contract.status][role]:
         flash('This action is not permitted')
@@ -156,7 +160,7 @@ def edit_draft(contract_id):
     form = EditProposalForm()
     form.template_id.choices = [(t.id, t.title) for t in Template.query.order_by('title')]
     if form.validate_on_submit():
-        proposal = Contract(template_id=form.template_id.data, params=form.params.data, status="draft", owner_id=current_user.id, parent_id=(contract.parent_id or contract.id))
+        proposal = Contract(template_id=form.template_id.data, params=form.params.data, memo=form.memo.data, status="draft", owner_id=current_user.id, parent_id=parent.id)
         db.session.add(proposal)
         db.session.flush()
         for p in contract.party:
@@ -167,7 +171,7 @@ def edit_draft(contract_id):
         return redirect(url_for('index'))
     form.template_id.data = contract.template_id
     form.params.data = contract.params
-    return render_template('edit_draft.html', title='Edit a Draft Proposal', form=form, contract_id=contract_id, parties=contract.party)
+    return render_template('edit_draft.html', title='Edit a Draft Proposal', form=form, contract_id=contract_id, parties=contract.party, deal=parent.memo)
 
 @app.route('/contract/<contract_id>')
 @login_required
@@ -219,24 +223,30 @@ def withdraw(contract_id):
     mail.send(msg)
     return redirect(url_for('index'))
 
-@app.route('/contract/<contract_id>/counter')
+@app.route('/contract/<contract_id>/counter', methods=['GET', 'POST'])
 @login_required
 def counter_contract(contract_id):
     contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
+    parent = contract if contract.parent_id is None else Contract.query.get(contract.parent_id)
     role = 'owner' if contract.owner_id == current_user.id else 'cparty'
     if 'counter' not in contract_transitions[contract.status][role]:
         flash('This action is not permitted')
         return redirect(url_for('index'))
-    clone = Contract(template_id=contract.template_id, params=contract.params, status="draft", owner_id=current_user.id)
-    db.session.add(clone)
-    db.session.flush()
-    for p in contract.party:
-        db.session.add(Party(contract_id=clone.id, user_id=p.user_id, role=p.role))
-    db.session.commit()
-    flash('Counter Proposal created')
-    #msg = Message(subject='Someone countered a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>New Counter Proposal</h1><p>Please click <a href="' + url_for('show_draft', contract_id=clone.id, _external=True) + '">here</a> to view the proposal.</p>')
-    #mail.send(msg)
-    return redirect(url_for('index'))
+    form = EditProposalForm()
+    form.template_id.choices = [(t.id, t.title) for t in Template.query.order_by('title')]
+    if form.validate_on_submit():
+        proposal = Contract(template_id=form.template_id.data, params=form.params.data, memo=form.memo.data, status="draft", owner_id=current_user.id, parent_id=parent.id)
+        db.session.add(proposal)
+        db.session.flush()
+        for p in contract.party:
+            party = Party(contract_id=proposal.id, role=p.role, user_id=p.user_id)
+            db.session.add(party)
+        db.session.commit()
+        flash('Draft edited.')
+        return redirect(url_for('index'))
+    form.template_id.data = contract.template_id
+    form.params.data = contract.params
+    return render_template('edit_draft.html', title='Edit a Draft Proposal', form=form, contract_id=contract_id, parties=contract.party, deal=parent.memo)
 
 @app.route('/contract/<contract_id>/reconsider')
 @login_required

@@ -3,6 +3,20 @@
 {% block content %}
 	<table>
 		<tr><td>Title</td><td>{{contract.template.title}}</td></tr>
+		<tr><td>Deal</td>
+			{% if parent is not none %}
+			<td><a href={{"/contract/" ~ parent.id}}>{{parent.memo}}</a></td>
+			{% else %}
+			<td>{{ contract.memo }}</td>
+			{% endif %}
+		</tr>
+		<tr><td>Memo</td>
+			{% if parent is not none %}
+			<td>{{contract.memo}}</td>
+			{% else %}
+			<td>[Original]</td>
+			{% endif %}
+		</tr>
 		<tr><td>Status</td><td>{{contract.status}}</td></tr>
 		<tr><td>Owner</td><td>{{contract.owner.username}}</td></tr>
 		<tr><td>Text</td><td>{{contract.template.body}}</td></tr>
@@ -22,12 +36,5 @@
                 	<a href={{"/contract/" ~ contract.id ~ "/" ~ action}}>{{action}}</a>
                 	{% endfor %}
 		</td></tr>
-		<tr><td>Parent</td>
-			{% if parent is not none %}
-			<td><a href={{"/contract/" ~ parent.id}}>{{parent.template.title}}</a></td>
-			{% else %}
-			<td>[None]</td>
-			{% endif %}
-		</tr>
 	</table>
 {% endblock %}

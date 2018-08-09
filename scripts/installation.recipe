@@ -4,6 +4,7 @@ export LC_ALL=C.UTF-8
 apt-get install python3-dev
 apt-get install python3-pip
 apt-get install python3-venv
+apt-get install sqlite3 libsqlite3-dev
 pip3 install --upgrade pip setuptools
 python3 -m venv ~/venvs/themis
 source ~/venvs/themis/bin/activate

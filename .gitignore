@@ -6,3 +6,4 @@
 client/app.db
 client/__pycache__/
 client/app/__pycache__/
+tmp/

@@ -10,11 +10,13 @@ function updateFields() {
 			var body = '<textarea id="body_text" rows="10" cols="50">';
 			body += fields['text'];
 			body += '</textarea>';
-			document.getElementById("text_div").innerHTML = body
-			var code = '<textarea id="body_code" rows="10" cols="50">';
-			code += fields['code'];
-			code += '</textarea>';
-			document.getElementById("code_div").innerHTML = code
+			document.getElementById("text_div").innerHTML = body;
+			//var code = '<textarea id="body_code" rows="10" cols="50">';
+			//code += fields['code'];
+			//code += '</textarea>';
+			//document.getElementById("code_div").innerHTML = code;
+			var deal = '<input disabled id="deal_code" value="{{ deal }}">';
+			document.getElementById("deal_div").innerHTML = deal;
                 }
         };
         xhttp.open("GET", "/template/" + document.getElementById("template_id").value + "/raw", true);
@@ -68,11 +70,24 @@ window.onload = function() {
             {% endfor %}
         </p>
 	<p>
+	Deal<br>
+	<div id="deal_div">
+		<input disabled id="deal_text"></input>
+	</div>
+	</p>
+	<p>
+            {{ form.memo.label }}:<br>
+	    {{ form.memo }}<br>
+            {% for error in form.memo.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+	</p>
+	<p>
 	Text<br>
 	<div id="text_div">
 		<textarea id="body_text" disabled rows="10" cols="50"></textarea>
 	</div>
-	<p>
+	</p>
 	<!--<p>
 	Code<br>
 	<div id="code_div">

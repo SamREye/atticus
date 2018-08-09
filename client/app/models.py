@@ -44,6 +44,7 @@ class Template(db.Model):
 class Contract(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     template_id = db.Column(db.Integer, db.ForeignKey('template.id'), index=True)
+    memo = db.Column(db.TEXT)
     params = db.Column(db.TEXT)
     status = db.Column(db.String(32), index=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
@@ -52,7 +53,7 @@ class Contract(db.Model):
     template = db.relationship('Template', backref='contract')
 
     def __repr__(self):
-        return '<Contract {}:{}:{}:{}>'.format(self.id, User.query.get(self.owner_id).username, Template.query.get(self.template_id).title, self.status)
+        return '<Contract {}:{}:{}:{}>'.format(self.id, User.query.get(self.owner_id).username, self.memo, self.status)
 
 class Party(db.Model):
     id = db.Column(db.Integer, primary_key=True)

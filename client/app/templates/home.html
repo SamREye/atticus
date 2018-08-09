@@ -4,18 +4,22 @@
 <h2>My Drafts</h2>
 <input type="button" onclick="location.href='/contract/new';" value="New Draft" />
 <table border="1">
-        <tr><th>Title</th><th>Parties</th><th>Actions</th></tr>
+        <tr><th>Template</th><th>Deal</th><th>Memo</th><th>Parties</th><th>Actions</th></tr>
         {% for d in drafts %}
-        <tr><td align="left"><a href="{{url_for('show_draft', contract_id=d.id)}}">{{d.template.title}}</a></td><td align="left">
-                {% for party in d.party %}
+        	<tr>
+		<td align="left"><a href="{{url_for('show_template', template_id=d[2].id)}}">{{d[2].title}}</a></td>
+		<td align="left"><a href="{{url_for('show_draft', contract_id=d[1].id)}}">{{d[1].memo}}</a></td>
+		<td align="left"><a href="{{url_for('show_draft', contract_id=d[0].id)}}">{{d[0].memo}}</a></td>
+		<td align="left">
+                {% for party in d[0].party %}
                         {{party.user.username}}
                 {% endfor %}
                 </td><td align="right">
-                {% for action in transitions[d.status]["owner" if d.owner.id == current_user.id else "cparty"] %}
-                <a href={{"/contract/" ~ d.id ~ "/" ~ action}}>{{action}}</a>
+                {% for action in transitions[d[0].status]["owner" if d[0].owner.id == current_user.id else "cparty"] %}
+                <a href={{"/contract/" ~ d[0].id ~ "/" ~ action}}>{{action}}</a>
                 {% endfor %}
-                {% for action in transitions[d.status]["any"] %}
-                <a href={{"/contract/" ~ d.id ~ "/" ~ action}}>{{action}}</a>
+                {% for action in transitions[d[0].status]["any"] %}
+                <a href={{"/contract/" ~ d[0].id ~ "/" ~ action}}>{{action}}</a>
                 {% endfor %}
                 </td></tr>
         {% else %}
@@ -24,10 +28,14 @@
 </table>
 <h2>Proposals</h2>
 <table border="1">
-	<tr><th>Title</th><th>Owner</th><th>Status</th><th>Signatures</th><th>Actions</th></tr>
+	<tr><th>Template</th><th>Deal</th><th>Memo</th><th>Owner</th><th>Status</th><th>Signatures</th><th>Actions</th></tr>
 	{% for p in proposals %}
-	<tr><td align="left"><a href="{{url_for('show_draft', contract_id=p.id)}}">{{p.template.title}}</a></td><td align="left">{{p.owner.username}}</td><td align="left">{{p.status}}</td><td align="right">
-		{% for party in p.party %}
+		<tr>
+		<td align="left"><a href="{{url_for('show_template', template_id=p[2].id)}}">{{p[2].title}}</a></td>
+		<td align="left"><a href="{{url_for('show_draft', contract_id=p[1].id)}}">{{p[1].memo}}</a></td>
+		<td align="left"><a href="{{url_for('show_draft', contract_id=p[0].id)}}">{{p[0].memo}}</a></td>
+		<td align="left">{{p[0].owner.username}}</td><td align="left">{{p[0].status}}</td><td align="right">
+		{% for party in p[0].party %}
 			{% if party.signed_on == None %}
 				{{party.user.username}}
 			{% else %}
@@ -35,28 +43,32 @@
 			{% endif %}
 		{% endfor %}
 		</td><td align="right">
-		{% for action in transitions[p.status]["owner" if p.owner.id == current_user.id else "cparty"] %}
-		<a href={{"/contract/" ~ p.id ~ "/" ~ action}}>{{action}}</a>
+		{% for action in transitions[p[0].status]["owner" if p[0].owner.id == current_user.id else "cparty"] %}
+		<a href={{"/contract/" ~ p[0].id ~ "/" ~ action}}>{{action}}</a>
 		{% endfor %}
-		{% for action in transitions[p.status]["any"] %}
-		<a href={{"/contract/" ~ p.id ~ "/" ~ action}}>{{action}}</a>
+		{% for action in transitions[p[0].status]["any"] %}
+		<a href={{"/contract/" ~ p[0].id ~ "/" ~ action}}>{{action}}</a>
 		{% endfor %}
-		</td></tr>
+		</td>
+		</tr>
 	{% else %}
 	<tr><td>[No proposals]</td></tr>
 	{% endfor %}
 </table>
 <h2>Active Contracts</h2>
 <table border="1">
-	<tr><th>Title</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
+	<tr><th>Title</th><th>Deal</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
 	{% for c in contracts %}
-	<tr><td align="left"><a href="{{url_for('show_draft', contract_id=c.id)}}">{{c.template.title}}</a></td><td align="left">{{c.owner.username}}</td><td align="left">{{c.status}}</td>
-		</td><td align="right">
-		{% for action in transitions[c.status]["owner" if c.owner.id == current_user.id else "cparty"] %}
-		<a href={{"/contract/" ~ c.id ~ "/" ~ action}}>{{action}}</a>
+		<tr>
+		<td align="left">{{c[2].title}}</td>
+		<td align="left"><a href="{{url_for('show_draft', contract_id=c[0].id)}}">{{c[1].memo}}</a></td>
+		<td align="left">{{c[0].owner.username}}</td><td align="left">{{c[0].status}}</td>
+		<td align="right">
+		{% for action in transitions[c[0].status]["owner" if c[0].owner.id == current_user.id else "cparty"] %}
+		<a href={{"/contract/" ~ c[0].id ~ "/" ~ action}}>{{action}}</a>
 		{% endfor %}
-		{% for action in transitions[c.status]["any"] %}
-		<a href={{"/contract/" ~ c.id ~ "/" ~ action}}>{{action}}</a>
+		{% for action in transitions[c[0].status]["any"] %}
+		<a href={{"/contract/" ~ c[0].id ~ "/" ~ action}}>{{action}}</a>
 		{% endfor %}
 		</td></tr>
 	{% else %}

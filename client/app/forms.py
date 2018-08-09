@@ -37,12 +37,14 @@ class CreateTemplateForm(FlaskForm):
 
 class CreateProposalForm(FlaskForm):
     template_id = SelectField('Template', coerce=int)
+    memo = StringField('Deal', validators=[DataRequired()])
     params = HiddenField('Parameters', default="[]")
     parties = HiddenField('Parties', default="[]")
     submit = SubmitField('Create')
 
 class EditProposalForm(FlaskForm):
     template_id = SelectField('Template', coerce=int)
+    memo = StringField('Memo', validators=[DataRequired()])
     params = HiddenField('Parameters', default="[]")
-    submit = SubmitField('Edit')
+    submit = SubmitField('Save')
 
