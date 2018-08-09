@@ -184,7 +184,7 @@ def show_draft(contract_id):
 def archive_draft(contract_id):
     contract = Contract.query.filter(Contract.id == contract_id).first_or_404()
     role = 'owner' if contract.owner_id == current_user.id else 'cparty'
-    if 'propose' not in contract_transitions[contract.status][role]:
+    if 'archive' not in contract_transitions[contract.status][role]:
         flash('This action is not permitted')
         return redirect(url_for('index'))
     contract.status = "archived"
@@ -234,8 +234,8 @@ def counter_contract(contract_id):
         db.session.add(Party(contract_id=clone.id, user_id=p.user_id, role=p.role))
     db.session.commit()
     flash('Counter Proposal created')
-    msg = Message(subject='Someone countered a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>New Counter Proposal</h1><p>Please click <a href="' + url_for('show_draft', contract_id=clone.id, _external=True) + '">here</a> to view the proposal.</p>')
-    mail.send(msg)
+    #msg = Message(subject='Someone countered a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>New Counter Proposal</h1><p>Please click <a href="' + url_for('show_draft', contract_id=clone.id, _external=True) + '">here</a> to view the proposal.</p>')
+    #mail.send(msg)
     return redirect(url_for('index'))
 
 @app.route('/contract/<contract_id>/reconsider')
@@ -249,8 +249,8 @@ def reconsider_contract(contract_id):
     contract.status = "proposed"
     db.session.commit()
     flash('Proposal reconsidered')
-    #msg = Message(subject='Someone is reconsidering a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>Proposal Reconsidered</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the proposal.</p>')
-    #mail.send(msg)
+    msg = Message(subject='Someone is reconsidering a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>Proposal Reconsidered</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the proposal.</p>')
+    mail.send(msg)
     return redirect(url_for('index'))
 
 @app.route('/contract/<contract_id>/decline')
