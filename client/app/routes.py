@@ -6,6 +6,7 @@ from flask_login import login_required, current_user, login_user, logout_user
 from app.models import User, Template, Contract, Party
 import json
 from datetime import datetime
+from sqlalchemy import or_
 from sqlalchemy.orm import aliased
 
 contract_actions = {'propose': 'proposed', 'decline': 'declined', 'reconsider': 'proposed', 'sign': 'signed'}
@@ -298,6 +299,12 @@ def sign_contract(contract_id):
                 all_signed = False
     if all_signed:
         contract.status = "signed"
+        siblings = Contract.query.filter(or_(Contract.parent_id == contract.parent_id, Contract.id == contract.parent_id)).all()
+        print(siblings)
+        for c in siblings:
+            if c.id == contract.id:
+                continue
+            c.status = "archived"
         db.session.commit()
         flash('Contract signed--now in effect!')
     else:
