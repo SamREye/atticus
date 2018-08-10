@@ -1,11 +1,4 @@
 <!DOCTYPE html>
-<style type="text/css">
- .topcorner{
-  position:absolute;
-  top:10;
-  right:10;
-  }
-</style>
 <html>
     <head>
    	<link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
@@ -18,16 +11,13 @@
 	{% block scripts %}{% endblock %}
     </head>
     <body>
-        <div class="topcorner">
-	    Welcome, <a href="{{ url_for('user', username=current_user.username) }}">{{ current_user.username }}</a>
-            {% if current_user.is_anonymous %}
-            <a href="{{ url_for('login') }}">Login</a>
-            {% else %}
-	    <a href="{{ url_for('index') }}">Home</a>
-            <a href="{{ url_for('logout') }}">Logout</a>
-            {% endif %}
-	</div>
-        <hr>
+	Welcome, <a href="{{ url_for('user', username=current_user.username) }}">{{ current_user.username }}</a>
+        {% if current_user.is_anonymous %}
+        <a href="{{ url_for('login') }}">Login</a>
+        {% else %}
+	<a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+        {% endif %}
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         <ul>

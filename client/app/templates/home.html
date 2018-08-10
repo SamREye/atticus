@@ -57,10 +57,10 @@
 </table>
 <h2>Active Contracts</h2>
 <table border="1">
-	<tr><th>Title</th><th>Deal</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
+	<tr><th>Template</th><th>Deal</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
 	{% for c in contracts %}
 		<tr>
-		<td align="left">{{c[2].title}}</td>
+		<td align="left"><a href="{{url_for('show_template', template_id=c[2].id)}}">{{c[2].title}}</td>
 		<td align="left"><a href="{{url_for('show_draft', contract_id=c[0].id)}}">{{c[1].memo}}</a></td>
 		<td align="left">{{c[0].owner.username}}</td><td align="left">{{c[0].status}}</td>
 		<td align="right">
