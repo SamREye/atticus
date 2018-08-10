@@ -3,7 +3,7 @@ from flask import flash, render_template, Response, redirect, url_for
 from app import app, db, mail
 from app.forms import LoginForm, RegistrationForm, CreateTemplateForm, CreateProposalForm, EditProposalForm
 from flask_login import login_required, current_user, login_user, logout_user
-from app.models import User, Template, Contract, Party
+from app.models import User, Template, Contract, Party, ActivityLog
 import json
 from datetime import datetime
 from sqlalchemy import or_
@@ -27,9 +27,9 @@ def index():
     templates = db.session.query(Template).filter(Template.owner_id == current_user.id).all()
     child = aliased(Contract)
     parent = aliased(Contract)
-    contracts = db.session.query(child, parent, Template).join(Template).join(Party).join(parent, child.parent_id == parent.id).filter(Party.user_id == current_user.id).filter(child.status == "signed").all()
-    proposals = db.session.query(child, parent, Template).join(Template).join(Party).join(parent, child.parent_id == parent.id).filter(Party.user_id == current_user.id).filter(~child.status.in_(["signed", "draft", "archived"])).all()
-    drafts = db.session.query(child, parent, Template).join(Template).join(Party).join(parent, child.parent_id == parent.id).filter(Contract.owner_id == current_user.id).filter(child.status == "draft").all()
+    contracts = db.session.query(child, parent, Template).join(Template).join(Party).outerjoin(parent, child.parent_id == parent.id).filter(Party.user_id == current_user.id).filter(child.status == "signed").all()
+    proposals = db.session.query(child, parent, Template).join(Template).join(Party).outerjoin(parent, child.parent_id == parent.id).filter(Party.user_id == current_user.id).filter(~child.status.in_(["signed", "draft", "archived"])).all()
+    drafts = db.session.query(child, parent, Template).join(Template).join(Party).outerjoin(parent, child.parent_id == parent.id).filter(Contract.owner_id == current_user.id).filter(child.status == "draft").all()
     return render_template('home.html', title='Home', proposals=proposals, contracts=contracts, templates=templates, drafts=drafts, transitions=contract_transitions)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -143,6 +143,10 @@ def create_draft():
         for p in json.loads(form.parties.data):
             party = Party(contract_id=proposal.id, role=p['label'], user_id=p['user_id'])
             db.session.add(party)
+        db.session.flush()
+        description = 'Creation of a new draft'
+        alog = ActivityLog(contract_id=proposal.id, timestamp=datetime.now(), method='/contract/new', description=description, user_id=current_user.id)
+        db.session.add(alog)
         db.session.commit()
         flash('Draft saved.')
         return redirect(url_for('index'))
@@ -167,6 +171,10 @@ def edit_draft(contract_id):
         for p in contract.party:
             party = Party(contract_id=proposal.id, role=p.role, user_id=p.user_id)
             db.session.add(party)
+        db.session.flush()
+        description = 'Editing a draft'
+        alog = ActivityLog(contract_id=proposal.id, timestamp=datetime.now(), method='/contract/edit', description=description, user_id=current_user.id)
+        db.session.add(alog)
         db.session.commit()
         flash('Draft edited.')
         return redirect(url_for('index'))
@@ -182,7 +190,8 @@ def show_draft(contract_id):
     parent = None
     if contract.parent_id is not None:
         parent = db.session.query(Contract).join(Template).filter(Contract.id == contract.parent_id).first()
-    return render_template('contract.html', contract=contract, parties=parties, transitions=contract_transitions, parent=parent)
+    activity_log = db.session.query(ActivityLog).filter(ActivityLog.contract_id.in_([contract.id, contract.parent_id])).all()
+    return render_template('contract.html', contract=contract, parties=parties, transitions=contract_transitions, parent=parent, activity_log=activity_log)
 
 @app.route('/contract/<contract_id>/archive')
 @login_required
@@ -193,6 +202,10 @@ def archive_draft(contract_id):
         flash('This action is not permitted')
         return redirect(url_for('index'))
     contract.status = "archived"
+    db.session.flush()
+    description = 'Archiving a draft/proposal'
+    alog = ActivityLog(contract_id=contract.id, timestamp=datetime.now(), method='/contract/archive', description=description, user_id=current_user.id)
+    db.session.add(alog)
     db.session.commit()
     return redirect(url_for('index'))
 
@@ -205,6 +218,10 @@ def propose(contract_id):
         flash('This action is not permitted')
         return redirect(url_for('index'))
     contract.status = "proposed"
+    db.session.flush()
+    description = 'New proposal submitted'
+    alog = ActivityLog(contract_id=contract.id, timestamp=datetime.now(), method='/contract/propose', description=description, user_id=current_user.id)
+    db.session.add(alog)
     db.session.commit()
     msg = Message(subject='Someone sent you a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>New Proposal</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the proposal.</p>')
     mail.send(msg)
@@ -219,6 +236,10 @@ def withdraw(contract_id):
         flash('This action is not permitted')
         return redirect(url_for('index'))
     contract.status = "draft"
+    db.session.flush()
+    description = 'Withdraw a proposal'
+    alog = ActivityLog(contract_id=contract.id, timestamp=datetime.now(), method='/contract/withdraw', description=description, user_id=current_user.id)
+    db.session.add(alog)
     db.session.commit()
     msg = Message(subject='A proposal of yours has been withdrawn', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>Proposal Withdrawn</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the proposal.</p>')
     mail.send(msg)
@@ -242,6 +263,10 @@ def counter_contract(contract_id):
         for p in contract.party:
             party = Party(contract_id=proposal.id, role=p.role, user_id=p.user_id)
             db.session.add(party)
+        db.session.flush()
+        description = 'Created a counter draft'
+        alog = ActivityLog(contract_id=proposal.id, timestamp=datetime.now(), method='/contract/counter', description=description, user_id=current_user.id)
+        db.session.add(alog)
         db.session.commit()
         flash('Draft edited.')
         return redirect(url_for('index'))
@@ -258,6 +283,10 @@ def reconsider_contract(contract_id):
         flash('This action is not permitted')
         return redirect(url_for('index'))
     contract.status = "proposed"
+    db.session.flush()
+    description = 'Reconsidered a proposal'
+    alog = ActivityLog(contract_id=contract.id, timestamp=datetime.now(), method='/contract/reconsider', description=description, user_id=current_user.id)
+    db.session.add(alog)
     db.session.commit()
     flash('Proposal reconsidered')
     msg = Message(subject='Someone is reconsidering a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>Proposal Reconsidered</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the proposal.</p>')
@@ -273,6 +302,10 @@ def decline_proposal(contract_id):
         flash('This action is not permitted')
         return redirect(url_for('index'))
     contract.status = "declined"
+    db.session.flush()
+    description = 'Declined a proposal'
+    alog = ActivityLog(contract_id=contract.id, timestamp=datetime.now(), method='/contract/decline', description=description, user_id=current_user.id)
+    db.session.add(alog)
     db.session.commit()
     flash('Proposal declined')
     msg = Message(subject='Someone declined a proposal', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>Proposal Declined</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the proposal.</p>')
@@ -300,15 +333,25 @@ def sign_contract(contract_id):
     if all_signed:
         contract.status = "signed"
         siblings = Contract.query.filter(or_(Contract.parent_id == contract.parent_id, Contract.id == contract.parent_id)).all()
-        print(siblings)
         for c in siblings:
             if c.id == contract.id:
                 continue
             c.status = "archived"
+        db.session.flush()
+        description = 'Signed a proposal'
+        alog = ActivityLog(contract_id=contract.id, timestamp=datetime.now(), method='/contract/sign', description=description, user_id=current_user.id)
+        db.session.add(alog)
+        description = 'Contract is in effect'
+        alog2 = ActivityLog(contract_id=contract.id, timestamp=datetime.now(), method='/contract/sign', description=description, user_id=current_user.id)
+        db.session.add(alog2)
         db.session.commit()
         flash('Contract signed--now in effect!')
     else:
         contract.status = "partially signed"
+        db.session.flush()
+        description = 'Signed a proposal'
+        alog = ActivityLog(contract_id=contract.id, timestamp=datetime.now(), method='/contract/sign', description=description, user_id=current_user.id)
+        db.session.add(alog)
         db.session.commit()
         flash('Contract signed--now pending other signature(s)')
     msg = Message(subject='Someone signed a contract', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>New Signature</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the contract.</p>')

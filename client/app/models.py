@@ -67,3 +67,16 @@ class Party(db.Model):
     def __repr__(self):
         return '<Party {}:{}:{}:{}>'.format(self.contract_id, self.role, User.query.get(self.user_id).username, self.signed_on)
 
+class ActivityLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    contract_id = db.Column(db.Integer, db.ForeignKey('contract.id'), index=True)
+    timestamp = db.Column(db.DateTime)
+    method = db.Column(db.String)
+    description = db.Column(db.TEXT)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    contract = db.relationship('Contract', backref='activity')
+    user = db.relationship('User', backref='activity')
+
+    def __repr__(self):
+        return '<ActivityLog {}:{}:{}:{}:{}'.format(self.contract_id, User.query.get(self.user_id).username, self.timestamp, self.method, self.description)
+

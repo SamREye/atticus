@@ -37,4 +37,17 @@
                 	{% endfor %}
 		</td></tr>
 	</table>
+	<hr>
+	<h2>Activity Log</h2>
+	<table>
+		<tr><th>When</th><th>Who</th><th>Contract</th><th>Description</th></tr>
+		{% for alog in activity_log %}
+		<tr>
+			<td>{{alog.timestamp}}</td>
+			<td>{{alog.user.username}}</td>
+			<td>{{alog.contract.memo}}</td>
+			<td>{{alog.description}}</td>
+		</tr>
+		{% endfor %}
+	</table>
 {% endblock %}

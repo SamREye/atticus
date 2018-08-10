@@ -61,7 +61,7 @@
 	{% for c in contracts %}
 		<tr>
 		<td align="left"><a href="{{url_for('show_template', template_id=c[2].id)}}">{{c[2].title}}</td>
-		<td align="left"><a href="{{url_for('show_draft', contract_id=c[0].id)}}">{{c[1].memo}}</a></td>
+		<td align="left"><a href="{{url_for('show_draft', contract_id=c[0].id)}}">{{c[1].memo or c[0].memo}}</a></td>
 		<td align="left">{{c[0].owner.username}}</td><td align="left">{{c[0].status}}</td>
 		<td align="right">
 		{% for action in transitions[c[0].status]["owner" if c[0].owner.id == current_user.id else "cparty"] %}
