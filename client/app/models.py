@@ -80,3 +80,12 @@ class ActivityLog(db.Model):
     def __repr__(self):
         return '<ActivityLog {}:{}:{}:{}:{}'.format(self.contract_id, User.query.get(self.user_id).username, self.timestamp, self.method, self.description)
 
+class DealMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    contract_id = db.Column(db.Integer, db.ForeignKey('contract.id'), index=True)
+    timestamp = db.Column(db.DateTime, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    message = db.Column(db.TEXT, nullable=False)
+    contract = db.relationship('Contract', backref='deal_message')
+    user = db.relationship('User', backref='deal_message')
+

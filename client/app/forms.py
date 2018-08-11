@@ -48,3 +48,7 @@ class EditProposalForm(FlaskForm):
     params = HiddenField('Parameters', default="[]")
     submit = SubmitField('Save')
 
+class SendMessageForm(FlaskForm):
+    message = TextAreaField('Text')
+    submit = SubmitField('Send')
+

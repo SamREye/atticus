@@ -1,9 +1,9 @@
 from flask_mail import Message
 from flask import flash, render_template, Response, redirect, url_for
 from app import app, db, mail
-from app.forms import LoginForm, RegistrationForm, CreateTemplateForm, CreateProposalForm, EditProposalForm
+from app.forms import LoginForm, RegistrationForm, CreateTemplateForm, CreateProposalForm, EditProposalForm, SendMessageForm
 from flask_login import login_required, current_user, login_user, logout_user
-from app.models import User, Template, Contract, Party, ActivityLog
+from app.models import User, Template, Contract, Party, ActivityLog, DealMessage
 import json
 from datetime import datetime
 from sqlalchemy import or_
@@ -182,16 +182,23 @@ def edit_draft(contract_id):
     form.params.data = contract.params
     return render_template('edit_draft.html', title='Edit a Draft Proposal', form=form, contract_id=contract_id, parties=contract.party, deal=parent.memo)
 
-@app.route('/contract/<contract_id>')
+@app.route('/contract/<contract_id>', methods=['GET', 'POST'])
 @login_required
 def show_draft(contract_id):
+    msg_form = SendMessageForm()
     contract = db.session.query(Contract).join(Template).filter(Contract.id == contract_id).first_or_404()
+    if msg_form.validate_on_submit():
+        m = DealMessage(contract_id=(contract.parent_id or contract.id), message=msg_form.message.data, user_id=current_user.id, timestamp=datetime.now())
+        db.session.add(m)
+        db.session.commit()
     parties = db.session.query(Party).join(Contract).filter(Contract.id == contract_id).all()
     parent = None
     if contract.parent_id is not None:
         parent = db.session.query(Contract).join(Template).filter(Contract.id == contract.parent_id).first()
     activity_log = db.session.query(ActivityLog).filter(ActivityLog.contract_id.in_([contract.id, contract.parent_id])).all()
-    return render_template('contract.html', contract=contract, parties=parties, transitions=contract_transitions, parent=parent, activity_log=activity_log)
+    deal_message = db.session.query(DealMessage).filter(DealMessage.contract_id.in_([contract.id, contract.parent_id])).all()
+    timeline = [(a.timestamp, 'action', a.user.username, a.contract.memo, a.description) for a in activity_log] + [(m.timestamp, 'message', m.user.username, '[N/A]', m.message) for m in deal_message]
+    return render_template('contract.html', msg_form=msg_form, contract=contract, parties=parties, transitions=contract_transitions, parent=parent, timeline=sorted(timeline, key=lambda x:x[0]))
 
 @app.route('/contract/<contract_id>/archive')
 @login_required

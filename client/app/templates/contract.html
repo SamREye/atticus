@@ -38,16 +38,28 @@
 		</td></tr>
 	</table>
 	<hr>
-	<h2>Activity Log</h2>
+	<h3>Timeline</h3>
 	<table>
-		<tr><th>When</th><th>Who</th><th>Contract</th><th>Description</th></tr>
-		{% for alog in activity_log %}
+		<tr><th>When</th><th>What</th><th>Who</th><th>Contract</th><th>Message</th></tr>
+		{% for t in timeline %}
 		<tr>
-			<td>{{alog.timestamp}}</td>
-			<td>{{alog.user.username}}</td>
-			<td>{{alog.contract.memo}}</td>
-			<td>{{alog.description}}</td>
+			{% for item in t %}
+			<td>{{item}}</td>
+			{% endfor %}
 		</tr>
 		{% endfor %}
 	</table>
+	<hr>
+	<h3>Send Message</h3>
+	<form action="" method="post">
+		{{ msg_form.hidden_tag() }}
+		<p>
+            		{{ msg_form.message.label }}:<br>
+            		{{ msg_form.message }}<br>
+	    		{% for error in msg_form.message.errors %}
+            			<span style="color: red;">[{{ error }}]</span>
+            		{% endfor %}
+		</p>
+		<p>{{ msg_form.submit() }}</p>
+	</form>
 {% endblock %}
