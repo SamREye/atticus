@@ -1,5 +1,5 @@
-THEMIS
-======
+ATTICUS
+=======
 
 # Overview
 
@@ -17,10 +17,10 @@ MIT
 
 The main components are:
 
- * __THEMIS DealMaker__: DApp that oversees the negotiation of legally binging agreement
- * __THEMIS Client__: The front-end for the DealMaker DApp
- * __THEMIS Standard__: C++ base class that allows integration into THEMIS
- * __THEMIS Catalogue__: Collection of contract templates that match the THEMIS standard
- * __THEMIS Amicus__: Tool for simulating behavior of hypothetical contractual scenarios
- * __THEMIS Clerk__: Tool for reviewing or triggering actions on active contracts
+ * __ATTICUS DealMaker__: DApp that oversees the negotiation of legally binging agreement
+ * __ATTICUS Client__: The front-end for the DealMaker DApp
+ * __ATTICUS Standard__: C++ base class that allows integration into THEMIS
+ * __ATTICUS Catalogue__: Collection of contract templates that match the THEMIS standard
+ * __ATTICUS Amicus__: Tool for simulating behavior of hypothetical contractual scenarios
+ * __ATTICUS Clerk__: Tool for reviewing or triggering actions on active contracts
 
