@@ -3,7 +3,8 @@
 *.abi
 *.swp
 *.pyc
+*.db
 client/__pycache__/
 client/app/__pycache__/
 tmp/
-client/app.db
+
