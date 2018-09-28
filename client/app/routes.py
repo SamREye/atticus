@@ -29,7 +29,7 @@ def index():
     parent = aliased(Contract)
     contracts = db.session.query(child, parent, Template).join(Template).join(Party).outerjoin(parent, child.parent_id == parent.id).filter(Party.user_id == current_user.id).filter(child.status == "signed").all()
     proposals = db.session.query(child, parent, Template).join(Template).join(Party).outerjoin(parent, child.parent_id == parent.id).filter(Party.user_id == current_user.id).filter(~child.status.in_(["signed", "draft", "archived"])).all()
-    drafts = db.session.query(child, parent, Template).join(Template).join(Party).outerjoin(parent, child.parent_id == parent.id).filter(Contract.owner_id == current_user.id).filter(child.status == "draft").all()
+    drafts = db.session.query(child, parent, Template).join(Template).join(Party).outerjoin(parent, child.parent_id == parent.id).filter(child.owner_id == current_user.id).filter(child.status == "draft").all()
     return render_template('home.html', title='Home', proposals=proposals, contracts=contracts, templates=templates, drafts=drafts, transitions=contract_transitions)
 
 @app.route('/register', methods=['GET', 'POST'])
