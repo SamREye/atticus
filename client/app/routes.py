@@ -191,6 +191,9 @@ def show_draft(contract_id):
         m = DealMessage(contract_id=(contract.parent_id or contract.id), message=msg_form.message.data, user_id=current_user.id, timestamp=datetime.now())
         db.session.add(m)
         db.session.commit()
+        msg = Message(subject='Someone sent you a message', sender='info@atticus.one', recipients=[p.user.email for p in contract.party if p.user_id != current_user.id], html='<h1>New Message</h1><p>Please click <a href="' + url_for('show_draft', contract_id=contract_id, _external=True) + '">here</a> to view the message.</p>')
+        mail.send(msg)
+        msg_form.message.data = ''
     parties = db.session.query(Party).join(Contract).filter(Contract.id == contract_id).all()
     parent = None
     if contract.parent_id is not None:
